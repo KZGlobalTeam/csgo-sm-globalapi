@@ -152,16 +152,24 @@ public Action CheckForRequests(Handle timer)
     char dataFile[PLATFORM_MAX_PATH];
     FileType fileType = FileType_Unknown;
 
+    bool gotFile = false;
+
     while (dataFiles.GetNext(dataFile, sizeof(dataFile), fileType))
     {
         if (fileType == FileType_File)
         {
             Format(dataFile, sizeof(dataFile), "%s/%s", path, dataFile);
+            gotFile = true;
             break;
         }
     }
 
     delete dataFiles;
+
+    if (!gotFile)
+    {
+        return Plugin_Continue;
+    }
 
     GlobalAPIRequestData requestData = Deserialize(dataFile);
     if (requestData == null)
