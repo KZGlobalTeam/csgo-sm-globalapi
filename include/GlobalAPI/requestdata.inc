@@ -408,7 +408,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         else
         {
-            JSON_Array hArray = new JSON_Array();
+            JSON_Array hArray = new JSON_Array(JSON_Type_Int);
 
             for (int i = 0; i < maxlength; i++)
             {
@@ -435,7 +435,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         else
         {
-            JSON_Array hArray = new JSON_Array();
+            JSON_Array hArray = new JSON_Array(JSON_Type_String);
 
             for (int i = 0; i < itemCount; i++)
             {

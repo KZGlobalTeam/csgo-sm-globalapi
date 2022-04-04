@@ -75,15 +75,16 @@ GlobalAPIRequestData CreateRequestData(Handle plugin, Function callback, any dat
 {
     GlobalAPIRequestData hData = new GlobalAPIRequestData(plugin);
 
+    Handle hFwd = CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+
     if (callback != INVALID_FUNCTION)
     {
-        Handle hFwd = CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
         AddToForward(hFwd, plugin, callback);
-
-        hData.Callback = hFwd;
     }
 
     hData.Data = data;
+    hData.Callback = hFwd;
+
     return hData;
 }
 
