@@ -67,7 +67,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      */
     public void SetDefault(char[] key)
     {
-        this.SetHandle(key, null);
+        this.SetInt(key, 0);
         this.SetHidden(key, true);
     }
 
@@ -456,16 +456,19 @@ methodmap GlobalAPIRequestData < JSON_Object
      */
     public void ToString(char[] queryString, int maxlength)
     {
-        StringMapSnapshot paramsMap = this.Snapshot();
+        int jsonSize = this.Length;
 
         char key[64];
         char value[1024];
 
         int paramCount = 0;
 
-        for (int i = 0; i < paramsMap.Length; i++)
+        for (int i = 0; i < jsonSize; i++)
         {
-            paramsMap.GetKey(i, key, sizeof(key));
+            int keySize = this.GetKeySize(i);
+            if (keySize > sizeof(key)) keySize = sizeof(key);
+            this.GetKey(i, key, keySize);
+
             if (this.GetHidden(key))
             {
                 continue;
@@ -526,8 +529,6 @@ methodmap GlobalAPIRequestData < JSON_Object
                 }
             }
         }
-
-        delete paramsMap;
     }
 }
 
