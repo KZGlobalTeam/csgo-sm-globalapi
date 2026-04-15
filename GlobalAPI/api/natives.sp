@@ -1057,11 +1057,11 @@ public int Native_GetRecordsTopRecent(Handle plugin, int numParams)
 
 /*
     native bool GlobalAPI_GetRecordsTopWorldRecords(OnAPICallFinished callback = INVALID_FUNCTION, any data = DEFAULT_DATA,
-                                                    int[] ids = DEFAULT_INT, int idsLength = DEFAULT_INT,
-                                                    int[] mapIds = DEFAULT_INT, int mapIdsLength = DEFAULT_INT,
-                                                    int[] stages = DEFAULT_INT, int stagesLength = DEFAULT_INT,
-                                                    int[] modeIds = DEFAULT_INT, int modeIdsLength = DEFAULT_INT,
-                                                    int[] tickRates = DEFAULT_INT, int tickRatesLength = DEFAULT_INT,
+                                                    int[] ids = DEFAULT_INT_ARRAY, int idsLength = DEFAULT_INT,
+                                                    int[] mapIds = DEFAULT_INT_ARRAY, int mapIdsLength = DEFAULT_INT,
+                                                    int[] stages = DEFAULT_INT_ARRAY, int stagesLength = DEFAULT_INT,
+                                                    int[] modeIds = DEFAULT_INT_ARRAY, int modeIdsLength = DEFAULT_INT,
+                                                    int[] tickRates = DEFAULT_INT_ARRAY, int tickRatesLength = DEFAULT_INT,
                                                     bool hasTeleports = DEFAULT_BOOL, char[] mapTag = DEFAULT_STRING,
                                                     int offset = DEFAULT_INT, int limit = DEFAULT_INT);
 */
@@ -1232,12 +1232,12 @@ public int Native_GetServersByName(Handle plugin, int numParams)
     native bool GlobalAPI_GetPlayerRanks(OnAPICallFinished callback = INVALID_FUNCTION, any data = DEFAULT_DATA,
                                         int pointsGreaterThan = DEFAULT_INT, float averageGreaterThan = DEFAULT_FLOAT,
                                         float ratingGreaterThan = DEFAULT_FLOAT, int finishesGreaterThan = DEFAULT_INT,
-                                        int[] steamId64s = DEFAULT_INT, int steamId64sLength = DEFAULT_INT, 
-                                        int[] recordFilterIds = DEFAULT_INT, int recordFilterIdsLength = DEFAULT_INT,
-                                        int[] mapIds = DEFAULT_INT, int mapIdsLength = DEFAULT_INT,
-                                        int[] stages = DEFAULT_INT, int stagesLength = DEFAULT_INT,
-                                        int[] modeIds = DEFAULT_INT, int modeIdsLength = DEFAULT_INT,
-                                        int[] tickRates = DEFAULT_INT, int tickRatesLength = DEFAULT_INT,
+                                        int[] steamId64s = DEFAULT_INT_ARRAY, int steamId64sLength = DEFAULT_INT, 
+                                        int[] recordFilterIds = DEFAULT_INT_ARRAY, int recordFilterIdsLength = DEFAULT_INT,
+                                        int[] mapIds = DEFAULT_INT_ARRAY, int mapIdsLength = DEFAULT_INT,
+                                        int[] stages = DEFAULT_INT_ARRAY, int stagesLength = DEFAULT_INT,
+                                        int[] modeIds = DEFAULT_INT_ARRAY, int modeIdsLength = DEFAULT_INT,
+                                        int[] tickRates = DEFAULT_INT_ARRAY, int tickRatesLength = DEFAULT_INT,
                                         bool hasTeleports = DEFAULT_BOOL, int offset = DEFAULT_INT, int limit = DEFAULT_INT);
 */
 #define GlobalAPI_GetPlayerRanks_Endpoint "player_ranks"
