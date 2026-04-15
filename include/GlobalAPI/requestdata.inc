@@ -37,8 +37,12 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         else
         {
-            requestData.SetString("pluginName", GetPluginDisplayName(plugin));
-            requestData.SetString("pluginVersion", GetPluginVersion(plugin));
+            char name[GlobalAPI_Max_PluginName_Length];
+            char version[GlobalAPI_Max_PluginVersion_Length];
+            GetPluginDisplayName(plugin, name, sizeof(name));
+            GetPluginVersion(plugin, version, sizeof(version));
+            requestData.SetString("pluginName", name);
+            requestData.SetString("pluginVersion", version);
         }
 
         requestData.SetHidden("pluginName", true);
@@ -270,8 +274,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         public set(Handle hFwd)
         {
-            this.SetHandle("callback", hFwd);
-            this.SetType("callback", JSON_Type_Int);
+            this.SetInt("callback", view_as<int>(hFwd));
             this.SetHidden("callback", true);
         }
     }
