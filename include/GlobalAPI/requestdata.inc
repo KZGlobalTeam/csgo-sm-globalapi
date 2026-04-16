@@ -54,6 +54,12 @@ methodmap GlobalAPIRequestData < JSON_Object
         requestData.SetInt("contentType", 0);
         requestData.SetHidden("contentType", true);
 
+        requestData.SetBool("failure", false);
+        requestData.SetHidden("failure", true);
+
+        requestData.SetInt("status", 0);
+        requestData.SetHidden("status", true);
+
         return view_as<GlobalAPIRequestData>(requestData);
     }
 
