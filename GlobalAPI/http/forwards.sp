@@ -24,6 +24,11 @@ public void Global_HTTP_DataReceived(Handle request, bool failure, int offset, i
 {
     GlobalAPI_DebugMessage("HTTP Response data received...");
 
+    if (failure)
+    {
+        hData.Failure = true;
+    }
+
     if (hData.Failure)
     {
         Call_Global_OnRequestFailed(request, hData);
@@ -41,7 +46,8 @@ public void Global_HTTP_DataReceived(Handle request, bool failure, int offset, i
         }
         else
         {
-            hData.SetHandle("_requestHandle", request);
+            hData.SetInt("_requestHandle", view_as<int>(request));
+            hData.SetHidden("_requestHandle", true);
             SteamWorks_GetHTTPResponseBodyCallback(request, Global_HTTP_Data, hData);
         }
     }
@@ -65,7 +71,7 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
 
         hData.AddDataPath(path);
 
-        Handle request = hData.GetHandle("_requestHandle");
+        Handle request = view_as<Handle>(hData.GetInt("_requestHandle"));
         SteamWorks_WriteHTTPResponseBodyToFile(request, path);
     }
     else
