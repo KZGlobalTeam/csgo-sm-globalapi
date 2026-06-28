@@ -154,7 +154,7 @@ public Action CheckForRequests(Handle timer)
     if (dataFiles == null)
     {
         LogError("Could not open directory %s", path);
-        return;
+        return Plugin_Continue;
     }
 
     char dataFile[PLATFORM_MAX_PATH];
@@ -176,13 +176,13 @@ public Action CheckForRequests(Handle timer)
 
     if (!gotFile)
     {
-        return;
+        return Plugin_Continue;
     }
 
     GlobalAPIRequestData requestData = Deserialize(dataFile);
     if (requestData == null)
     {
-        return;
+        return Plugin_Continue;
     }
 
     DeleteFile(dataFile);
@@ -196,6 +196,8 @@ public Action CheckForRequests(Handle timer)
     {
         DeleteFile(bodyFilePath);
     }
+
+    return Plugin_Continue;
 }
 
 public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH])

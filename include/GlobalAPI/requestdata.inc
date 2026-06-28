@@ -37,8 +37,12 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         else
         {
-            requestData.SetString("pluginName", GetPluginDisplayName(plugin));
-            requestData.SetString("pluginVersion", GetPluginVersion(plugin));
+            char name[GlobalAPI_Max_PluginName_Length];
+            char version[GlobalAPI_Max_PluginVersion_Length];
+            GetPluginDisplayName(plugin, name, sizeof(name));
+            GetPluginVersion(plugin, version, sizeof(version));
+            requestData.SetString("pluginName", name);
+            requestData.SetString("pluginVersion", version);
         }
 
         requestData.SetHidden("pluginName", true);
@@ -49,6 +53,12 @@ methodmap GlobalAPIRequestData < JSON_Object
 
         requestData.SetInt("contentType", 0);
         requestData.SetHidden("contentType", true);
+
+        requestData.SetBool("failure", false);
+        requestData.SetHidden("failure", true);
+
+        requestData.SetInt("status", 0);
+        requestData.SetHidden("status", true);
 
         return view_as<GlobalAPIRequestData>(requestData);
     }
@@ -63,7 +73,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      */
     public void SetDefault(char[] key)
     {
-        this.SetHandle(key, null);
+        this.SetInt(key, 0);
         this.SetHidden(key, true);
     }
 
@@ -270,8 +280,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         public set(Handle hFwd)
         {
-            this.SetHandle("callback", hFwd);
-            this.SetType("callback", JSON_Type_Int);
+            this.SetInt("callback", view_as<int>(hFwd));
             this.SetHidden("callback", true);
         }
     }
@@ -453,16 +462,19 @@ methodmap GlobalAPIRequestData < JSON_Object
      */
     public void ToString(char[] queryString, int maxlength)
     {
-        StringMapSnapshot paramsMap = this.Snapshot();
+        int jsonSize = this.Length;
 
         char key[64];
         char value[1024];
 
         int paramCount = 0;
 
-        for (int i = 0; i < paramsMap.Length; i++)
+        for (int i = 0; i < jsonSize; i++)
         {
-            paramsMap.GetKey(i, key, sizeof(key));
+            int keySize = this.GetKeySize(i);
+            if (keySize > sizeof(key)) keySize = sizeof(key);
+            this.GetKey(i, key, keySize);
+
             if (this.GetHidden(key))
             {
                 continue;
@@ -523,8 +535,6 @@ methodmap GlobalAPIRequestData < JSON_Object
                 }
             }
         }
-
-        delete paramsMap;
     }
 }
 

@@ -22,7 +22,7 @@ methodmap APIIterable < JSON_Array
     * @param hItems     JSON_Object array handle
     * @return           A new APIIterable handle
     */
-    public APIIterable(JSON_Array hItems)
+    public APIIterable(JSON_Object hItems)
     {
         if (hItems.HasKey("result"))
         {
@@ -43,7 +43,6 @@ methodmap APIIterable < JSON_Array
    /**
     * Gets an object from the array by index
     *
-    * @note             This is an alias to GetObjectIndexed
     * @param index      Index of the object we want to retrieve
     * @return           JSON_Object handle to the object retrieved
     */
