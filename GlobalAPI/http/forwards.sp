@@ -9,7 +9,7 @@ public void Global_HTTP_Started(Handle request, GlobalAPIRequestData hData)
 public void Global_HTTP_Completed(Handle request, bool failure, bool requestSuccessful, EHTTPStatusCode statusCode, GlobalAPIRequestData hData)
 {
     hData.Status = view_as<int>(statusCode);
-    hData.Failure = (failure || !requestSuccessful || statusCode != k_EHTTPStatusCode200OK);
+    hData.Failure = (failure || !requestSuccessful || !IsHTTPStatusSuccess(statusCode));
     hData.ResponseTime = CalculateResponseTime(hData);
 
     Call_Global_OnRequestFinished(request, hData);
