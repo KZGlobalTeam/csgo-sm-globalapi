@@ -8,6 +8,7 @@
 // =========================================================== //
 
 #include <json>
+#include <GlobalAPI/stocks>
 
 // =========================================================== //
 
@@ -547,14 +548,18 @@ static void BoolToString(bool value, char[] buffer, int maxlength)
 
 static void AppendToQueryString(int &index, char[] buffer, int maxlength, char[] key, char[] value)
 {
+    int encodedLength = (strlen(value) * 3) + 1;
+    char[] encodedValue = new char[encodedLength];
+    URLEncode(value, encodedValue, encodedLength);
+
     if (index == 0)
     {
         index++;
-        Format(buffer, maxlength, "?%s=%s", key, value);
+        Format(buffer, maxlength, "?%s=%s", key, encodedValue);
     }
     else
     {
         index++;
-        Format(buffer, maxlength, "%s&%s=%s", buffer, key, value);
+        Format(buffer, maxlength, "%s&%s=%s", buffer, key, encodedValue);
     }
 }
