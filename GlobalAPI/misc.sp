@@ -98,6 +98,25 @@ void CleanupRequestData(GlobalAPIRequestData hData)
     delete hFwd;
 }
 
+int GetNativeIntArray(int arrayParam, int lengthParam, int[] buffer, int maxlength)
+{
+    int length = GetNativeCell(lengthParam);
+
+    if (length <= 0)
+    {
+        return 0;
+    }
+
+    if (length > maxlength)
+    {
+        length = maxlength;
+    }
+
+    GetNativeArray(arrayParam, buffer, length);
+
+    return length;
+}
+
 void CallForward(Handle hFwd, JSON_Object hJson, GlobalAPIRequestData hData, any data)
 {
     if (hFwd != null)
