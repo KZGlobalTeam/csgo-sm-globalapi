@@ -1,5 +1,7 @@
 bool ReadAPIKey()
 {
+    gC_apiKey[0] = '\0';
+
     char fileToRead[PLATFORM_MAX_PATH] = "cfg/sourcemod/globalapi-key.cfg";
     if (!FileExists(fileToRead))
     {
