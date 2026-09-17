@@ -31,7 +31,15 @@ bool HTTPGet(GlobalAPIRequestData hData)
     request.SetContentTypeHeader(hData);
     request.SetRequestOriginHeader(hData);
     request.SetAuthenticationHeader(gC_apiKey);
-    request.Send(hData);
+
+    if (!request.Send(hData))
+    {
+        LogError("[GlobalAPI] Could not send request to \"%s\"", requestUrl);
+
+        delete request;
+        CleanupRequestData(hData);
+        return false;
+    }
 
     return true;
 }

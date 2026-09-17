@@ -22,7 +22,15 @@ bool HTTPPost(GlobalAPIRequestData hData)
     {
         char file[PLATFORM_MAX_PATH];
         hData.GetString("bodyFile", file, sizeof(file));
-        request.SetBodyFromFile(hData, file);
+
+        if (!FileExists(file) || !request.SetBodyFromFile(hData, file))
+        {
+            LogError("[GlobalAPI] Could not set request body from file %s", file);
+
+            delete request;
+            CleanupRequestData(hData);
+            return false;
+        }
     }
     else
     {
@@ -42,7 +50,15 @@ bool HTTPPost(GlobalAPIRequestData hData)
     request.SetContentTypeHeader(hData);
     request.SetRequestOriginHeader(hData);
     request.SetAuthenticationHeader(gC_apiKey);
-    request.Send(hData);
+
+    if (!request.Send(hData))
+    {
+        LogError("[GlobalAPI] Could not send request to \"%s\"", requestUrl);
+
+        delete request;
+        CleanupRequestData(hData);
+        return false;
+    }
 
     return true;
 }

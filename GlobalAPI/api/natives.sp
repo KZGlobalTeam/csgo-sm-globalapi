@@ -130,6 +130,7 @@ public int Native_SendRequest(Handle plugin, int numParams)
         case GlobalAPIRequestType_POST: return HTTPPost(hData);
     }
 
+    CleanupRequestData(hData);
     return false;
 }
 
