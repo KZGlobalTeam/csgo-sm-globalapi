@@ -71,6 +71,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     TryCreateDirectory(dataDir);
 
     // TODO: Create empty apikey file?
+
+    return APLRes_Success;
 }
 
 public void OnPluginStart()
@@ -81,7 +83,9 @@ public void OnPluginStart()
     ConVar sourcemodCvar = FindConVar("sourcemod_Version");
     sourcemodCvar.GetString(gC_SourcemodVersion, sizeof(gC_SourcemodVersion));
 
+    gC_baseUrl = GlobalAPI_BaseUrl;
     gB_usingAPIKey = ReadAPIKey();
+
     AutoExecConfig(true, "globalapi-convars");
 }
 

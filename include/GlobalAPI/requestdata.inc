@@ -8,6 +8,7 @@
 // =========================================================== //
 
 #include <json>
+#include <GlobalAPI/stocks>
 
 // =========================================================== //
 
@@ -37,18 +38,28 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         else
         {
-            requestData.SetString("pluginName", GetPluginDisplayName(plugin));
-            requestData.SetString("pluginVersion", GetPluginVersion(plugin));
+            char name[GlobalAPI_Max_PluginName_Length];
+            char version[GlobalAPI_Max_PluginVersion_Length];
+            GetPluginDisplayName(plugin, name, sizeof(name));
+            GetPluginVersion(plugin, version, sizeof(version));
+            requestData.SetString("pluginName", name);
+            requestData.SetString("pluginVersion", version);
         }
 
-        requestData.SetKeyHidden("pluginName", true);
-        requestData.SetKeyHidden("pluginVersion", true);
+        requestData.SetHidden("pluginName", true);
+        requestData.SetHidden("pluginVersion", true);
 
         requestData.SetInt("acceptType", 0);
-        requestData.SetKeyHidden("acceptType", true);
+        requestData.SetHidden("acceptType", true);
 
         requestData.SetInt("contentType", 0);
-        requestData.SetKeyHidden("contentType", true);
+        requestData.SetHidden("contentType", true);
+
+        requestData.SetBool("failure", false);
+        requestData.SetHidden("failure", true);
+
+        requestData.SetInt("status", 0);
+        requestData.SetHidden("status", true);
 
         return view_as<GlobalAPIRequestData>(requestData);
     }
@@ -56,65 +67,65 @@ methodmap GlobalAPIRequestData < JSON_Object
    /**
      * Sets a key as default
      *
-     * @note                        This sets them as "Handle" type
-     * @note                        - See GlobalAPI.inc for default values
-     * @param key                Key to set as default
+     * @note                This sets them as "Handle" type
+     * @note                See GlobalAPI.inc for default values
+     * @param key           Key to set as default
      * @noreturn
      */
     public void SetDefault(char[] key)
     {
-        this.SetHandle(key);
-        this.SetKeyHidden(key, true);
+        this.SetInt(key, 0);
+        this.SetHidden(key, true);
     }
 
    /**
      * Sets url to the request data
      *
-     * @param url                Url to set
+     * @param url           Url to set
      * @noreturn
      */
     public void AddUrl(char[] url)
     {
         this.SetString("url", url);
-        this.SetKeyHidden("url", true);
+        this.SetHidden("url", true);
     }
 
    /**
      * Sets endpoint to the request data
      *
-     * @param endpoint            Endpoint to set
+     * @param endpoint      Endpoint to set
      * @noreturn
      */
     public void AddEndpoint(char[] endpoint)
     {
         this.SetString("endpoint", endpoint);
-        this.SetKeyHidden("endpoint", true);
+        this.SetHidden("endpoint", true);
     }
 
    /**
     * Sets body file path to the request data
     *
-    * @note                        Path to file with data to be posted
-    * @param path                Body file (path) to set
+    * @note                 Path to file with data to be posted
+    * @param path           Body file (path) to set
     * @noreturn
     */
     public void AddBodyFile(char[] path)
     {
         this.SetString("bodyFile", path);
-        this.SetKeyHidden("bodyFile", true);
+        this.SetHidden("bodyFile", true);
     }
 
    /**
     * Sets data file path to the request data
     *
-    * @note                        Path for downloaded files
-    * @param path                Data path to set
+    * @note                 Path for downloaded files
+    * @param path           Data path to set
     * @noreturn
     */
     public void AddDataPath(char[] path)
     {
         this.SetString("dataFilePath", path);
-        this.SetKeyHidden("dataFilePath", true);
+        this.SetHidden("dataFilePath", true);
     }
 
     /*
@@ -159,7 +170,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         public set(bool required)
         {
             this.SetBool("keyRequired", required);
-            this.SetKeyHidden("keyRequired", true);
+            this.SetHidden("keyRequired", true);
         }
     }
 
@@ -175,7 +186,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         public set(bool retried)
         {
             this.SetBool("isRetried", retried);
-            this.SetKeyHidden("isRetried", true);
+            this.SetHidden("isRetried", true);
         }
     }
 
@@ -191,7 +202,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         public set(int length)
         {
             this.SetInt("bodyLength", length);
-            this.SetKeyHidden("bodyLength", true);
+            this.SetHidden("bodyLength", true);
         }
     }
 
@@ -207,7 +218,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         public set(int status)
         {
             this.SetInt("status", status);
-            this.SetKeyHidden("status", true);
+            this.SetHidden("status", true);
         }
     }
 
@@ -223,7 +234,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         public set(int responseTime)
         {
             this.SetInt("responseTime", responseTime);
-            this.SetKeyHidden("responseTime", true);
+            this.SetHidden("responseTime", true);
         }
     }
 
@@ -239,7 +250,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         public set(int type)
         {
             this.SetInt("requestType", type);
-            this.SetKeyHidden("requestType", true);
+            this.SetHidden("requestType", true);
         }
     }
 
@@ -255,7 +266,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         public set(bool failure)
         {
             this.SetBool("failure", failure);
-            this.SetKeyHidden("failure", true);
+            this.SetHidden("failure", true);
         }
     }
 
@@ -270,9 +281,8 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         public set(Handle hFwd)
         {
-            this.SetHandle("callback", hFwd);
-            this.SetKeyType("callback", Type_Int);
-            this.SetKeyHidden("callback", true);
+            this.SetInt("callback", view_as<int>(hFwd));
+            this.SetHidden("callback", true);
         }
     }
 
@@ -288,17 +298,29 @@ methodmap GlobalAPIRequestData < JSON_Object
         public set(any data)
         {
             this.SetInt("data", data);
-            this.SetKeyHidden("data", true);
+            this.SetHidden("data", true);
         }
+    }
+
+    /**
+     * Gets the body filepath from the request data
+     *
+     * @param buffer        Buffer to store the result in
+     * @param maxlength     Maxlength of the buffer
+     * @noreturn
+     */
+    public void GetBodyFile(char[] buffer, int maxlength)
+    {
+        this.GetString("bodyFile", buffer, maxlength);
     }
 
    /**
      * Adds a number to the request data
      *
-     * @note                        Default values are added as "defaults"
-     * @note                        See GlobalAPI.inc for the default values
-     * @param key                Key name to set
-     * @param value                Value of the key
+     * @note                Default values are added as "defaults"
+     * @note                See GlobalAPI.inc for the default values
+     * @param key           Key name to set
+     * @param value         Value of the key
      * @noreturn
      */
     public void AddNum(char[] key, int value)
@@ -316,10 +338,10 @@ methodmap GlobalAPIRequestData < JSON_Object
    /**
      * Adds a float to the request data
      *
-     * @note                        Default values are added as "defaults"
-     * @note                        See GlobalAPI.inc for the default values
-     * @param key                Key name to set
-     * @param value                Value of the key
+     * @note                Default values are added as "defaults"
+     * @note                See GlobalAPI.inc for the default values
+     * @param key           Key name to set
+     * @param value         Value of the key
      * @noreturn
      */
     public void AddFloat(char[] key, float value)
@@ -337,10 +359,10 @@ methodmap GlobalAPIRequestData < JSON_Object
    /**
      * Adds a string to the request data
      *
-     * @note                        Default values are added as "defaults"
-     * @note                        See GlobalAPI.inc for the default values
-     * @param key                Key name to set
-     * @param value                Value of the key
+     * @note                Default values are added as "defaults"
+     * @note                See GlobalAPI.inc for the default values
+     * @param key           Key name to set
+     * @param value         Value of the key
      * @noreturn
      */
     public void AddString(char[] key, char[] value)
@@ -358,10 +380,10 @@ methodmap GlobalAPIRequestData < JSON_Object
    /**
      * Adds a boolean to the request data
      *
-     * @note                        Default values are added as "defaults"
-     * @note                        See GlobalAPI.inc for the default values
-     * @param key                Key name to set
-     * @param value                Value of the key
+     * @note                Default values are added as "defaults"
+     * @note                See GlobalAPI.inc for the default values
+     * @param key           Key name to set
+     * @param value         Value of the key
      * @noreturn
      */
     public void AddBool(char[] key, bool value)
@@ -379,10 +401,10 @@ methodmap GlobalAPIRequestData < JSON_Object
    /**
      * Adds integer array to the request data
      *
-     * @note                        Max length <= 0 are added as defaults
-     * @param key                Key name to set
-     * @param value                Values (array) of the key
-     * @param maxlength            Max length of the values array
+     * @note                Max length <= 0 are added as defaults
+     * @param key           Key name to set
+     * @param value         Values (array) of the key
+     * @param maxlength     Max length of the values array
      * @noreturn
      */
     public void AddIntArray(char[] key, int[] value, int maxlength)
@@ -393,7 +415,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         else
         {
-            JSON_Object hArray = new JSON_Object(true);
+            JSON_Array hArray = new JSON_Array(JSON_Type_Int);
 
             for (int i = 0; i < maxlength; i++)
             {
@@ -407,9 +429,9 @@ methodmap GlobalAPIRequestData < JSON_Object
    /**
      * Adds string array to the request data
      *
-     * @note                        Item count <= 0 are added as defaults
-     * @param key                Key name to set
-     * @param itemCount            Amount of strings in the array
+     * @note                Item count <= 0 are added as defaults
+     * @param key           Key name to set
+     * @param itemCount     Amount of strings in the array
      * @noreturn
      */
     public void AddStringArray(char[] key, char[][] value, int itemCount)
@@ -420,7 +442,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         }
         else
         {
-            JSON_Object hArray = new JSON_Object(true);
+            JSON_Array hArray = new JSON_Array(JSON_Type_String);
 
             for (int i = 0; i < itemCount; i++)
             {
@@ -434,72 +456,79 @@ methodmap GlobalAPIRequestData < JSON_Object
    /**
      * Converts all of the request data into a query string representation
      *
-     * @note                        This ignores "hidden" keys
-     * @param queryString        Buffer to store the result in
-     * @param maxlength            Max length of the buffer
+     * @note                    This ignores "hidden" keys
+     * @param queryString       Buffer to store the result in
+     * @param maxlength         Max length of the buffer
      * @noreturn
      */
     public void ToString(char[] queryString, int maxlength)
     {
-        StringMapSnapshot paramsMap = this.Snapshot();
+        int jsonSize = this.Length;
 
         char key[64];
         char value[1024];
 
         int paramCount = 0;
 
-        for (int i = 0; i < paramsMap.Length; i++)
+        for (int i = 0; i < jsonSize; i++)
         {
-            paramsMap.GetKey(i, key, sizeof(key));
-            if (this.GetKeyHidden(key) || json_is_meta_key(key))
+            int keySize = this.GetKeySize(i);
+            if (keySize > sizeof(key)) keySize = sizeof(key);
+            this.GetKey(i, key, keySize);
+
+            if (this.GetHidden(key))
             {
                 continue;
             }
 
-            switch(this.GetKeyType(key))
+            switch(this.GetType(key))
             {
-                case Type_String:
+                case JSON_Type_String:
                 {
                     this.GetString(key, value, sizeof(value));
                     AppendToQueryString(paramCount, queryString, maxlength, key, value);
                 }
-                case Type_Float:
+                case JSON_Type_Float:
                 {
                     float temp = this.GetFloat(key);
                     FloatToString(temp, value, sizeof(value));
                     AppendToQueryString(paramCount, queryString, maxlength, key, value);
                 }
-                case Type_Int:
+                case JSON_Type_Int:
                 {
                     int temp = this.GetInt(key);
                     IntToString(temp, value, sizeof(value));
                     AppendToQueryString(paramCount, queryString, maxlength, key, value);
                 }
-                case Type_Bool:
+                case JSON_Type_Bool:
                 {
                     bool temp = this.GetBool(key);
                     BoolToString(temp, value, sizeof(value));
                     AppendToQueryString(paramCount, queryString, maxlength, key, value);
                 }
-                case Type_Object:
+                case JSON_Type_Object:
                 {
                     JSON_Object hObject = this.GetObject(key);
-
-                    if (!hObject.IsArray) continue;
-
-                    for (int x = 0; x < hObject.Length; x++)
+                    if (!hObject.IsArray)
                     {
-                        switch (hObject.GetKeyTypeIndexed(x))
+                        continue;
+                    }
+
+                    JSON_Array hArr = view_as<JSON_Array>(hObject);
+
+                    for (int x = 0; x < hArr.Length; x++)
+                    {
+                        switch (hArr.GetType(x))
                         {
-                            case Type_Int:
+                            case JSON_Type_Int:
                             {
-                                int temp = hObject.GetIntIndexed(x);
+                                int temp = hArr.GetInt(x);
                                 IntToString(temp, value, sizeof(value));
                                 AppendToQueryString(paramCount, queryString, maxlength, key, value);
                             }
-                            case Type_String:
+                            case JSON_Type_String:
                             {
-                                hObject.GetStringIndexed(x, value, sizeof(value));
+                                hArr.GetString(x, value, sizeof(value));
                                 AppendToQueryString(paramCount, queryString, maxlength, key, value);
                             }
                         }
@@ -507,8 +536,6 @@ methodmap GlobalAPIRequestData < JSON_Object
                 }
             }
         }
-
-        delete paramsMap;
     }
 }
 
@@ -521,14 +548,18 @@ static void BoolToString(bool value, char[] buffer, int maxlength)
 
 static void AppendToQueryString(int &index, char[] buffer, int maxlength, char[] key, char[] value)
 {
+    int encodedLength = (strlen(value) * 3) + 1;
+    char[] encodedValue = new char[encodedLength];
+    URLEncode(value, encodedValue, encodedLength);
+
     if (index == 0)
     {
         index++;
-        Format(buffer, maxlength, "?%s=%s", key, value);
+        Format(buffer, maxlength, "?%s=%s", key, encodedValue);
     }
     else
     {
         index++;
-        Format(buffer, maxlength, "%s&%s=%s", buffer, key, value);
+        Format(buffer, maxlength, "%s&%s=%s", buffer, key, encodedValue);
     }
 }

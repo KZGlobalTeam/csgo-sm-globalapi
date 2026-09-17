@@ -76,7 +76,7 @@ public Action Command_Info(int client, int args)
         }
 
         // All valid ones checked, has to be invalid
-        else if (json_string_startswith(argument, "--") && argument[2] != '-')
+        else if (strncmp(argument, "--", 2) == 0 && argument[2] != '-')
         {
             Format(errorString, sizeof(errorString), "Invalid command option \"%s\"", argument);
             errorMessages.PushString(errorString);
@@ -103,12 +103,16 @@ public Action Command_Info(int client, int args)
 
     delete errorMessages;
     delete usedArguments;
+
+    return Plugin_Handled;
 }
 
 public Action Command_ReloadAPIKey(int client, int args)
 {
     gB_usingAPIKey = ReadAPIKey();
     ReplyToCommand(client, "[GlobalAPI] API Key reloaded!");
+
+    return Plugin_Handled;
 }
 
 // =====[ PRIVATE ]=====
@@ -119,11 +123,13 @@ static void PrintInfoHeaderToConsole(int client)
     int paddingSize = Format(infoStr, sizeof(infoStr), "[GlobalAPI Plugin v%s for backend %s]",
                                                         GlobalAPI_Plugin_Version, GlobalAPI_Backend_Version);
 
-    char[] padding = new char[paddingSize];
+    char[] padding = new char[paddingSize + 1];
     for (int i = 0; i < paddingSize; i++)
     {
         padding[i] = '-';
     }
+
+    padding[paddingSize] = '\0';
 
     PrintToConsole(client, padding);
     PrintToConsole(client, infoStr);

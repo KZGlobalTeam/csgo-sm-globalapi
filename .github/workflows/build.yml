@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  push:
+    branches: [master, dev]
+    tags: ['v*']
+  pull_request:
+    branches: ['*']
+  workflow_dispatch:
+
+jobs:
+  compile:
+    name: Compile Plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install SourceMod
+        run: |
+          mkdir smdir
+          wget -q -O - "http://sourcemod.net/latest.php?os=linux&version=1.12" | tar xzf - -C ./smdir
+
+      - name: Compile
+        run: |
+          for file in *.sp; do
+            echo "Compiling $file..."
+            ./smdir/addons/sourcemod/scripting/spcomp64 "$file" -i ./include
+          done
+
+      - name: Stage artifacts
+        run: |
+          mv ./*.smx ./smdir/addons/sourcemod/plugins/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: GlobalAPI
+          path: smdir/addons/sourcemod/plugins/GlobalAPI*.smx
+
+  release:
+    name: Create Release
+    needs: compile
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: GlobalAPI
+          path: smdir/addons/sourcemod/plugins
+
+      - name: Package
+        run: |
+          cd smdir
+          zip -r ../GlobalAPI-${{ github.ref_name }}.zip .
+          zip -r ../GlobalAPI-latest.zip .
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            GlobalAPI-${{ github.ref_name }}.zip
+            GlobalAPI-latest.zip
