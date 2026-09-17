@@ -103,24 +103,31 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
         File srcFile = OpenFile(srcFilePath, "rb");
         File destFile = OpenFile(bodyFilePath, "wb");
 
-        if (srcFile == null || destFile == null)
-        {
-            delete srcFile;
-            delete destFile;
-            delete binaryFile;
-            return;
-        }
+        bool copied = srcFile != null && destFile != null;
 
         int buffer[4096];
 
-        while (!srcFile.EndOfFile())
+        while (copied && !srcFile.EndOfFile())
         {
             int readCount = srcFile.Read(buffer, sizeof(buffer), 1);
-            destFile.Write(buffer, readCount, 1);
+            copied = readCount >= 0 && destFile.Write(buffer, readCount, 1);
         }
 
         delete srcFile;
         delete destFile;
+
+        // The request cannot be retried without its body,
+        // so leave no files of it behind
+        if (!copied)
+        {
+            LogError("Could not copy body file %s for retrying", srcFilePath);
+
+            delete binaryFile;
+
+            DeleteFile(path);
+            DeleteFile(bodyFilePath);
+            return;
+        }
     }
 
     char url[GlobalAPI_Max_BaseUrl_Length];
