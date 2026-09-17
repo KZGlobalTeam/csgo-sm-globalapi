@@ -941,6 +941,7 @@ public void __pl_GlobalAPI_SetNTVOptional()
 
     // Jumpstats
     MarkNativeAsOptional("GlobalAPI_GetJumpstats");
+    MarkNativeAsOptional("GlobalAPI_CreateJumpstat");
     MarkNativeAsOptional("GlobalAPI_GetJumpstatTop");
     MarkNativeAsOptional("GlobalAPI_GetJumpstatTop30");
 
