@@ -3,6 +3,7 @@ bool HTTPPost(GlobalAPIRequestData hData)
     if (hData.KeyRequired && !gB_usingAPIKey && !gCV_Debug.BoolValue)
     {
         LogMessage("[GlobalAPI] Using this method requires an API key, and you dont seem to have one setup!");
+        CleanupRequestData(hData);
         return false;
     }
 
@@ -13,8 +14,7 @@ bool HTTPPost(GlobalAPIRequestData hData)
 
     if (request == null)
     {
-        json_cleanup_and_delete(hData);
-        delete request;
+        CleanupRequestData(hData);
         return false;
     }
 

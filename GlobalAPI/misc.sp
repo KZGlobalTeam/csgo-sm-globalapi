@@ -88,6 +88,16 @@ GlobalAPIRequestData CreateRequestData(Handle plugin, Function callback, any dat
     return hData;
 }
 
+// For requests that never started, nothing else will free these
+void CleanupRequestData(GlobalAPIRequestData hData)
+{
+    Handle hFwd = hData.Callback;
+
+    json_cleanup_and_delete(hData);
+
+    delete hFwd;
+}
+
 void CallForward(Handle hFwd, JSON_Object hJson, GlobalAPIRequestData hData, any data)
 {
     if (hFwd != null)
