@@ -123,11 +123,13 @@ static void PrintInfoHeaderToConsole(int client)
     int paddingSize = Format(infoStr, sizeof(infoStr), "[GlobalAPI Plugin v%s for backend %s]",
                                                         GlobalAPI_Plugin_Version, GlobalAPI_Backend_Version);
 
-    char[] padding = new char[paddingSize];
+    char[] padding = new char[paddingSize + 1];
     for (int i = 0; i < paddingSize; i++)
     {
         padding[i] = '-';
     }
+
+    padding[paddingSize] = '\0';
 
     PrintToConsole(client, padding);
     PrintToConsole(client, infoStr);
