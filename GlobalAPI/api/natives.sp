@@ -339,7 +339,7 @@ public int Native_GetJumpstats(Handle plugin, int numParams)
     GetNativeString(9, jumpTypeList, sizeof(jumpTypeList));
 
     float greaterThanDistance = GetNativeCell(10);
-    float lowerThanDistance = GetNativeCell(11);
+    float lessThanDistance = GetNativeCell(11);
 
     bool isMsl = GetNativeCell(12);
     bool isCrouchBind = GetNativeCell(13);
@@ -366,7 +366,7 @@ public int Native_GetJumpstats(Handle plugin, int numParams)
     hData.AddString("steamid64_list", steamId64List);
     hData.AddString("jumptype_list", jumpTypeList);
     hData.AddFloat("greater_than_distance", greaterThanDistance);
-    hData.AddFloat("lower_than_distance", lowerThanDistance);
+    hData.AddFloat("less_than_distance", lessThanDistance);
     hData.AddBool("is_msl", isMsl);
     hData.AddBool("is_crouch_bind", isCrouchBind);
     hData.AddBool("is_forward_bind", isForwardBind);
