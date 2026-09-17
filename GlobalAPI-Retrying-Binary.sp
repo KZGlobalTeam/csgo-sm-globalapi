@@ -133,8 +133,9 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
     char url[GlobalAPI_Max_BaseUrl_Length];
     hData.GetString("url", url, sizeof(url));
 
-    char params[8192];
-    hData.Encode(params, sizeof(params));
+    int paramsSize = json_encode_size(hData);
+    char[] params = new char[paramsSize];
+    hData.Encode(params, paramsSize);
 
     binaryFile.WriteInt32(MAGIC_BYTES);
     binaryFile.WriteInt8(FORMAT_VERSION);
