@@ -315,7 +315,7 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
         hData.AddBodyFile(bodyFilePath);
     }
 
-    json_cleanup_and_delete(hParams);
+    hParams.Super.Cleanup();
 
     delete file;
     return hData;
