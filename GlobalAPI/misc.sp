@@ -52,7 +52,11 @@ void FormatPathParam(char[] buffer, int maxlength, char[] param, char[] value = 
     }
     else
     {
-        ReplaceString(buffer, maxlength, paramKey, value);
+        int encodedLength = (strlen(value) * 3) + 1;
+        char[] encodedValue = new char[encodedLength];
+        URLEncode(value, encodedValue, encodedLength);
+
+        ReplaceString(buffer, maxlength, paramKey, encodedValue);
     }
 }
 
