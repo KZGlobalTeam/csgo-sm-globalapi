@@ -160,26 +160,44 @@ public Action CheckForRequests(Handle timer)
     char dataFile[PLATFORM_MAX_PATH];
     FileType fileType = FileType_Unknown;
 
-    bool gotFile = false;
+    ArrayList foundFiles = new ArrayList(ByteCountToCells(sizeof(dataFile)));
 
     while (dataFiles.GetNext(dataFile, sizeof(dataFile), fileType))
     {
         if (fileType == FileType_File)
         {
             Format(dataFile, sizeof(dataFile), "%s/%s", path, dataFile);
-            gotFile = true;
-            break;
+            foundFiles.PushString(dataFile);
         }
     }
 
     delete dataFiles;
 
-    if (!gotFile)
+    GlobalAPIRequestData requestData = null;
+
+    // Files we cannot deserialize are skipped,
+    // otherwise they would block the queue on every check
+    for (int i = 0; i < foundFiles.Length; i++)
     {
-        return Plugin_Continue;
+        foundFiles.GetString(i, dataFile, sizeof(dataFile));
+
+        bool isCorrupt = false;
+        requestData = Deserialize(dataFile, isCorrupt);
+
+        if (requestData != null)
+        {
+            break;
+        }
+
+        if (isCorrupt)
+        {
+            LogError("Deleting corrupt retrying file %s", dataFile);
+            DeleteFile(dataFile);
+        }
     }
 
-    GlobalAPIRequestData requestData = Deserialize(dataFile);
+    delete foundFiles;
+
     if (requestData == null)
     {
         return Plugin_Continue;
@@ -200,8 +218,11 @@ public Action CheckForRequests(Handle timer)
     return Plugin_Continue;
 }
 
-public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH])
+// isCorrupt is only set for files that are ours, but cannot be read as requests
+public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &isCorrupt)
 {
+    isCorrupt = false;
+
     File file = OpenFile(filePath, "r");
     if (file == null)
     {
@@ -210,57 +231,64 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH])
     }
 
     int magicBytes;
-    file.ReadInt32(magicBytes);
-
-    if (magicBytes != MAGIC_BYTES)
+    if (!file.ReadInt32(magicBytes) || magicBytes != MAGIC_BYTES)
     {
         // Not a retrying file?
+        delete file;
         return null;
     }
 
     int formatVersion;
-    file.ReadInt8(formatVersion);
-
-    if (formatVersion != FORMAT_VERSION)
+    if (!file.ReadInt8(formatVersion) || formatVersion != FORMAT_VERSION)
     {
         // Unsupported format version
+        delete file;
+        return null;
+    }
+
+    int fileSize = FileSize(filePath);
+    int length;
+    bool ok = true;
+
+    ok = ok && ReadLength(file, false, fileSize, length);
+    char[] url = new char[length + 1];
+    ok = ok && file.ReadString(url, length + 1, length) == length;
+    url[length] = '\0';
+
+    ok = ok && ReadLength(file, true, fileSize, length);
+    char[] params = new char[length + 1];
+    ok = ok && file.ReadString(params, length + 1, length) == length;
+    params[length] = '\0';
+
+    bool keyRequired;
+    ok = ok && file.ReadInt8(keyRequired);
+
+    int requestType;
+    ok = ok && file.ReadInt8(requestType);
+
+    int bodyLength;
+    ok = ok && file.ReadInt32(bodyLength);
+
+    int timestamp;
+    ok = ok && file.ReadInt32(timestamp);
+
+    ok = ok && ReadLength(file, false, fileSize, length);
+    char[] bodyFilePath = new char[length + 1];
+    ok = ok && file.ReadString(bodyFilePath, length + 1, length) == length;
+    bodyFilePath[length] = '\0';
+
+    JSON_Object hParams = ok ? json_decode(params) : null;
+    if (hParams == null)
+    {
+        // Truncated file or undecodable params
+        isCorrupt = true;
+        delete file;
         return null;
     }
 
     GlobalAPIRequestData hData = new GlobalAPIRequestData(GetMyHandle());
 
-    int length;
-
-    file.ReadInt16(length);
-    char[] url = new char[length + 1];
-    file.ReadString(url, length, length);
-    url[length] = '\0';
-
-    file.ReadInt32(length);
-    char[] params = new char[length + 1];
-    file.ReadString(params, length, length);
-    params[length] = '\0';
-
-    bool keyRequired;
-    file.ReadInt8(keyRequired);
-
-    int requestType;
-    file.ReadInt8(requestType);
-
-    int bodyLength;
-    file.ReadInt32(bodyLength);
-
-    int timestamp;
-    file.ReadInt32(timestamp);
-
-    file.ReadInt16(length);
-    char[] bodyFilePath = new char[length + 1];
-    file.ReadString(bodyFilePath, length, length);
-    bodyFilePath[length] = '\0';
-
     hData.AddUrl(url);
-
-    JSON_Object hParams = json_decode(params);
     hData.Merge(hParams);
 
     // These are set to null until
@@ -283,4 +311,20 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH])
 
     delete file;
     return hData;
+}
+
+// =====[ PRIVATE ]=====
+
+// Corrupt lengths must not reach new char[],
+// a runtime error there would skip deleting the file
+static bool ReadLength(File file, bool isInt32, int maxLength, int &length)
+{
+    bool read = isInt32 ? file.ReadInt32(length) : file.ReadInt16(length);
+    if (!read || length < 0 || length > maxLength)
+    {
+        length = 0;
+        return false;
+    }
+
+    return true;
 }
