@@ -3,6 +3,9 @@
 #define DATA_PATH "data/GlobalAPI-Retrying"
 #define DATA_FILE "retrying_{timestamp}_{gametick}.dat"
 
+#define MAGIC_BYTES 0x676c6f62616c617069
+#define FORMAT_VERSION 2
+
 // =========================================================== //
 
 #include <GlobalAPI>
@@ -28,12 +31,20 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-    char path[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, path, sizeof(path), "%s", DATA_PATH);
+    char rootDirPath[PLATFORM_MAX_PATH];
+    BuildPath(Path_SM, rootDirPath, sizeof(rootDirPath), "%s", DATA_PATH);
 
-    if (!TryCreateDirectory(path))
+    if (!TryCreateDirectory(rootDirPath))
     {
-        SetFailState("Failed to create directory %s", path);
+        SetFailState("Failed to create directory %s", rootDirPath);
+    }
+
+    char filesDirPath[PLATFORM_MAX_PATH];
+    BuildPath(Path_SM, filesDirPath, sizeof(filesDirPath), "%s/files", DATA_PATH);
+
+    if (!TryCreateDirectory(filesDirPath))
+    {
+        SetFailState("Failed to create directory %s", filesDirPath);
     }
 
     CreateTimer(30.0, CheckForRequests, _, TIMER_REPEAT);
@@ -43,10 +54,18 @@ public void OnPluginStart()
 
 public void GlobalAPI_OnRequestFailed(Handle request, GlobalAPIRequestData hData)
 {
-    if (hData.RequestType == GlobalAPIRequestType_POST)
+    if (IsRetryableRequest(hData))
     {
         SaveRequestAsBinary(hData);
     }
+}
+
+bool IsRetryableRequest(GlobalAPIRequestData hData)
+{
+    int status = hData.Status;
+
+    return hData.RequestType == GlobalAPIRequestType_POST
+        && (status == 0 || status == 429 || status >= 500);
 }
 
 public void SaveRequestAsBinary(GlobalAPIRequestData hData)
@@ -65,34 +84,73 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
     BuildPath(Path_SM, path, sizeof(path), "%s/%s", DATA_PATH, dataFile);
 
     File binaryFile = OpenFile(path, "a+");
-
     if (binaryFile == null)
     {
         LogError("Could not open or create binary file %s", path);
         return;
     }
 
-    // Start preparing data
-    int bodyLength = hData.BodyLength;
+    char bodyFilePath[PLATFORM_MAX_PATH];
+
+    // Assume binary files have been set as files
+    if (hData.ContentType == GlobalAPIRequestContentType_OctetStream)
+    {
+        char srcFilePath[PLATFORM_MAX_PATH];
+        hData.GetBodyFile(srcFilePath, sizeof(srcFilePath));
+
+        BuildPath(Path_SM, bodyFilePath, sizeof(bodyFilePath), "%s/files/%s", DATA_PATH, dataFile);
+
+        File srcFile = OpenFile(srcFilePath, "rb");
+        File destFile = OpenFile(bodyFilePath, "wb");
+
+        bool copied = srcFile != null && destFile != null;
+
+        int buffer[4096];
+
+        while (copied && !srcFile.EndOfFile())
+        {
+            int readCount = srcFile.Read(buffer, sizeof(buffer), 1);
+            copied = readCount >= 0 && destFile.Write(buffer, readCount, 1);
+        }
+
+        delete srcFile;
+        delete destFile;
+
+        // The request cannot be retried without its body,
+        // so leave no files of it behind
+        if (!copied)
+        {
+            LogError("Could not copy body file %s for retrying", srcFilePath);
+
+            delete binaryFile;
+
+            DeleteFile(path);
+            DeleteFile(bodyFilePath);
+            return;
+        }
+    }
 
     char url[GlobalAPI_Max_BaseUrl_Length];
     hData.GetString("url", url, sizeof(url));
 
-    char[] params = new char[bodyLength];
-    hData.Encode(params, bodyLength);
+    int paramsSize = json_encode_size(hData);
+    char[] params = new char[paramsSize];
+    hData.Encode(params, paramsSize);
 
-    int requestType = hData.RequestType;
-    bool keyRequired = hData.KeyRequired;
-
+    binaryFile.WriteInt32(MAGIC_BYTES);
+    binaryFile.WriteInt8(FORMAT_VERSION);
     binaryFile.WriteInt16(strlen(url));
     binaryFile.WriteString(url, false);
     binaryFile.WriteInt32(strlen(params));
     binaryFile.WriteString(params, false);
-    binaryFile.WriteInt8(keyRequired);
-    binaryFile.WriteInt8(requestType);
-    binaryFile.WriteInt32(bodyLength);
+    binaryFile.WriteInt8(hData.KeyRequired);
+    binaryFile.WriteInt8(hData.RequestType);
+    binaryFile.WriteInt32(hData.BodyLength);
     binaryFile.WriteInt32(StringToInt(szTimestamp));
-    binaryFile.Close();
+    binaryFile.WriteInt16(strlen(bodyFilePath));
+    binaryFile.WriteString(bodyFilePath, false);
+
+    delete binaryFile;
 }
 
 public Action CheckForRequests(Handle timer)
@@ -101,72 +159,145 @@ public Action CheckForRequests(Handle timer)
     BuildPath(Path_SM, path, sizeof(path), DATA_PATH);
 
     DirectoryListing dataFiles = OpenDirectory(path);
-
     if (dataFiles == null)
     {
         LogError("Could not open directory %s", path);
-        return;
+        return Plugin_Continue;
     }
 
     char dataFile[PLATFORM_MAX_PATH];
-    while (dataFiles.GetNext(dataFile, sizeof(dataFile)))
+    FileType fileType = FileType_Unknown;
+
+    ArrayList foundFiles = new ArrayList(ByteCountToCells(sizeof(dataFile)));
+
+    while (dataFiles.GetNext(dataFile, sizeof(dataFile), fileType))
     {
-        if (!StrEqual(dataFile, ".") && !StrEqual(dataFile, ".."))
+        if (fileType == FileType_File)
         {
             Format(dataFile, sizeof(dataFile), "%s/%s", path, dataFile);
-            break;
+            foundFiles.PushString(dataFile);
         }
     }
 
     delete dataFiles;
 
-    if (FileExists(dataFile))
-    {
-        File binaryFile = OpenFile(dataFile, "r");
+    GlobalAPIRequestData requestData = null;
 
-        if (binaryFile == null)
+    // Files we cannot deserialize are skipped,
+    // otherwise they would block the queue on every check
+    for (int i = 0; i < foundFiles.Length; i++)
+    {
+        foundFiles.GetString(i, dataFile, sizeof(dataFile));
+
+        bool isCorrupt = false;
+        requestData = Deserialize(dataFile, isCorrupt);
+
+        if (requestData != null)
         {
-            LogError("Could not open binary file %s", path);
-            return;
+            break;
         }
 
-        int length;
-
-        binaryFile.ReadInt16(length);
-        char[] url = new char[length + 1];
-        binaryFile.ReadString(url, length, length);
-        url[length] = '\0';
-
-        binaryFile.ReadInt32(length);
-        char[] params = new char[length + 1];
-        binaryFile.ReadString(params, length, length);
-        params[length] = '\0';
-
-        bool keyRequired;
-        binaryFile.ReadInt8(keyRequired);
-
-        int requestType;
-        binaryFile.ReadInt8(requestType);
-
-        int bodyLength;
-        binaryFile.ReadInt32(bodyLength);
-
-        int timestamp;
-        binaryFile.ReadInt32(timestamp);
-        binaryFile.Close();
-
-        RetryRequest(url, params, keyRequired, requestType, bodyLength);
-        DeleteFile(dataFile);
+        if (isCorrupt)
+        {
+            LogError("Deleting corrupt retrying file %s", dataFile);
+            DeleteFile(dataFile);
+        }
     }
+
+    delete foundFiles;
+
+    if (requestData == null)
+    {
+        return Plugin_Continue;
+    }
+
+    DeleteFile(dataFile);
+    GlobalAPI_SendRequest(requestData);
+
+    // Delete body file if it exists after sending the request
+    char bodyFilePath[PLATFORM_MAX_PATH];
+    requestData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
+
+    if (bodyFilePath[0] != '\0' && FileExists(bodyFilePath))
+    {
+        DeleteFile(bodyFilePath);
+    }
+
+    return Plugin_Continue;
 }
 
-public void RetryRequest(char[] url, char[] params, bool keyRequired, int requestType, int bodyLength)
+// isCorrupt is only set for files that are ours, but cannot be read as requests
+public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &isCorrupt)
 {
-    // Pack everything into GlobalAPI plugin friendly format
+    isCorrupt = false;
+
+    File file = OpenFile(filePath, "r");
+    if (file == null)
+    {
+        LogError("Could not open binary file %s", filePath);
+        return null;
+    }
+
+    int magicBytes;
+    if (!file.ReadInt32(magicBytes) || magicBytes != MAGIC_BYTES)
+    {
+        // Not a retrying file?
+        delete file;
+        return null;
+    }
+
+    int formatVersion;
+    if (!file.ReadInt8(formatVersion) || formatVersion != FORMAT_VERSION)
+    {
+        // Unsupported format version
+        delete file;
+        return null;
+    }
+
+    int fileSize = FileSize(filePath);
+    int length;
+    bool ok = true;
+
+    ok = ok && ReadLength(file, false, fileSize, length);
+    char[] url = new char[length + 1];
+    ok = ok && file.ReadString(url, length + 1, length) == length;
+    url[length] = '\0';
+
+    ok = ok && ReadLength(file, true, fileSize, length);
+    char[] params = new char[length + 1];
+    ok = ok && file.ReadString(params, length + 1, length) == length;
+    params[length] = '\0';
+
+    bool keyRequired;
+    ok = ok && file.ReadInt8(keyRequired);
+
+    int requestType;
+    ok = ok && file.ReadInt8(requestType);
+
+    int bodyLength;
+    ok = ok && file.ReadInt32(bodyLength);
+
+    int timestamp;
+    ok = ok && file.ReadInt32(timestamp);
+
+    ok = ok && ReadLength(file, false, fileSize, length);
+    char[] bodyFilePath = new char[length + 1];
+    ok = ok && file.ReadString(bodyFilePath, length + 1, length) == length;
+    bodyFilePath[length] = '\0';
+
+    JSON_Object hParams = ok ? json_decode(params) : null;
+    if (hParams == null)
+    {
+        // Truncated file or undecodable params
+        isCorrupt = true;
+        delete file;
+        return null;
+    }
+
     GlobalAPIRequestData hData = new GlobalAPIRequestData(GetMyHandle());
 
     hData.AddUrl(url);
-    hData.Decode(params);
+    hData.Merge(hParams);
 
     // These are set to null until
     // We have a reliable way of retrieving
@@ -179,5 +310,29 @@ public void RetryRequest(char[] url, char[] params, bool keyRequired, int reques
     hData.KeyRequired = keyRequired;
     hData.RequestType = requestType;
 
-    GlobalAPI_SendRequest(hData);
+    if (strlen(bodyFilePath) > 0)
+    {
+        hData.AddBodyFile(bodyFilePath);
+    }
+
+    hParams.Super.Cleanup();
+
+    delete file;
+    return hData;
+}
+
+// =====[ PRIVATE ]=====
+
+// Corrupt lengths must not reach new char[],
+// a runtime error there would skip deleting the file
+static bool ReadLength(File file, bool isInt32, int maxLength, int &length)
+{
+    bool read = isInt32 ? file.ReadInt32(length) : file.ReadInt16(length);
+    if (!read || length < 0 || length > maxLength)
+    {
+        length = 0;
+        return false;
+    }
+
+    return true;
 }

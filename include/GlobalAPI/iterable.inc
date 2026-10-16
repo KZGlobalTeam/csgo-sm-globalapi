@@ -14,7 +14,7 @@
 /*
     Helper methodmap for JSON_Object arrays
 */
-methodmap APIIterable < JSON_Object
+methodmap APIIterable < JSON_Array
 {
    /**
     * Creates a new APIIterable
@@ -28,6 +28,7 @@ methodmap APIIterable < JSON_Object
         {
             return view_as<APIIterable>(hItems.GetObject("result"));
         }
+
         return view_as<APIIterable>(hItems);
     }
 
@@ -42,13 +43,12 @@ methodmap APIIterable < JSON_Object
    /**
     * Gets an object from the array by index
     *
-    * @note             This is an alias to GetObjectIndexed
     * @param index      Index of the object we want to retrieve
     * @return           JSON_Object handle to the object retrieved
     */
     public JSON_Object GetById(int index)
     {
-        return this.GetObjectIndexed(index);
+        return this.GetObject(index);
     }
 }
 

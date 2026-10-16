@@ -86,12 +86,12 @@ methodmap GlobalAPIRequest < Handle
     * Sets predefined HTTP callbacks
     *
     * @note             Predefined values:
-    * @note             Global_HTTP_Completed, Global_HTTP_Headers and Global_HTTP_DataReceived
+    * @note             Global_HTTP_Completed
     * @noreturn
     */
     public void SetCallbacks()
     {
-        SteamWorks_SetHTTPCallbacks(this, Global_HTTP_Completed, Global_HTTP_Headers, Global_HTTP_DataReceived);
+        SteamWorks_SetHTTPCallbacks(this, Global_HTTP_Completed);
     }
 
    /**

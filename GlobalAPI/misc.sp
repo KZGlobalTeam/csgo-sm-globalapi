@@ -1,5 +1,7 @@
 bool ReadAPIKey()
 {
+    gC_apiKey[0] = '\0';
+
     char fileToRead[PLATFORM_MAX_PATH] = "cfg/sourcemod/globalapi-key.cfg";
     if (!FileExists(fileToRead))
     {
@@ -52,7 +54,11 @@ void FormatPathParam(char[] buffer, int maxlength, char[] param, char[] value = 
     }
     else
     {
-        ReplaceString(buffer, maxlength, paramKey, value);
+        int encodedLength = (strlen(value) * 3) + 1;
+        char[] encodedValue = new char[encodedLength];
+        URLEncode(value, encodedValue, encodedLength);
+
+        ReplaceString(buffer, maxlength, paramKey, encodedValue);
     }
 }
 
@@ -66,29 +72,55 @@ void CallForward_NoResponse(GlobalAPIRequestData hData)
     CallForward(hFwd, null, hData, data);
 
     // Cleanup
-    if (hData != null)
-    {
-        hData.Cleanup();
-    }
+    json_cleanup_and_delete(hData);
 
     delete hFwd;
-    delete hData;
 }
 
 GlobalAPIRequestData CreateRequestData(Handle plugin, Function callback, any data)
 {
     GlobalAPIRequestData hData = new GlobalAPIRequestData(plugin);
 
+    Handle hFwd = CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+
     if (callback != INVALID_FUNCTION)
     {
-        Handle hFwd = CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
         AddToForward(hFwd, plugin, callback);
-
-        hData.Callback = hFwd;
     }
 
     hData.Data = data;
+    hData.Callback = hFwd;
+
     return hData;
+}
+
+// For requests that never started, nothing else will free these
+void CleanupRequestData(GlobalAPIRequestData hData)
+{
+    Handle hFwd = hData.Callback;
+
+    json_cleanup_and_delete(hData);
+
+    delete hFwd;
+}
+
+int GetNativeIntArray(int arrayParam, int lengthParam, int[] buffer, int maxlength)
+{
+    int length = GetNativeCell(lengthParam);
+
+    if (length <= 0)
+    {
+        return 0;
+    }
+
+    if (length > maxlength)
+    {
+        length = maxlength;
+    }
+
+    GetNativeArray(arrayParam, buffer, length);
+
+    return length;
 }
 
 void CallForward(Handle hFwd, JSON_Object hJson, GlobalAPIRequestData hData, any data)

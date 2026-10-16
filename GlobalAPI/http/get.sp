@@ -3,6 +3,7 @@ bool HTTPGet(GlobalAPIRequestData hData)
     if (hData.KeyRequired && !gB_usingAPIKey && !gCV_Debug.BoolValue)
     {
         LogMessage("[GlobalAPI] Using this method requires an API key, and you dont seem to have one setup!");
+        CleanupRequestData(hData);
         return false;
     }
 
@@ -17,8 +18,7 @@ bool HTTPGet(GlobalAPIRequestData hData)
 
     if (request == null)
     {
-        delete hData;
-        delete request;
+        CleanupRequestData(hData);
         return false;
     }
 
@@ -31,7 +31,15 @@ bool HTTPGet(GlobalAPIRequestData hData)
     request.SetContentTypeHeader(hData);
     request.SetRequestOriginHeader(hData);
     request.SetAuthenticationHeader(gC_apiKey);
-    request.Send(hData);
+
+    if (!request.Send(hData))
+    {
+        LogError("[GlobalAPI] Could not send request to \"%s\"", requestUrl);
+
+        delete request;
+        CleanupRequestData(hData);
+        return false;
+    }
 
     return true;
 }
