@@ -66,13 +66,9 @@ void CallForward_NoResponse(GlobalAPIRequestData hData)
     CallForward(hFwd, null, hData, data);
 
     // Cleanup
-    if (hData != null)
-    {
-        hData.Cleanup();
-    }
+    json_cleanup_and_delete(hData);
 
     delete hFwd;
-    delete hData;
 }
 
 GlobalAPIRequestData CreateRequestData(Handle plugin, Function callback, any data)

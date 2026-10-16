@@ -168,7 +168,10 @@ public void RetryRequest(char[] url, char[] params, bool keyRequired, int reques
     GlobalAPIRequestData hData = new GlobalAPIRequestData(GetMyHandle());
 
     hData.AddUrl(url);
-    hData.Decode(params);
+    JSON_Object hParams = json_decode(params);
+    hData.Merge(hParams);
+    // Shallow cleanup since hData now references the nested objects
+    hParams.Super.Cleanup();
 
     // These are set to null until
     // We have a reliable way of retrieving
