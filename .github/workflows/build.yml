@@ -29,12 +29,13 @@ jobs:
 
       - name: Stage artifacts
         run: |
-          mv ./*.smx ./smdir/addons/sourcemod/plugins/
+          mkdir -p package/addons/sourcemod/plugins
+          mv ./*.smx package/addons/sourcemod/plugins/
 
       - uses: actions/upload-artifact@v7
         with:
           name: GlobalAPI
-          path: smdir/addons/sourcemod/plugins/GlobalAPI*.smx
+          path: package/
 
   release:
     name: Create Release
@@ -47,12 +48,12 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: GlobalAPI
-          path: smdir/addons/sourcemod/plugins
+          path: package
 
       - name: Package
         run: |
-          cd smdir
-          zip -r ../GlobalAPI-${{ github.ref_name }}.zip .
+          cd package
+          zip -r ../GlobalAPI-v${{ github.ref_name }}.zip .
 
       - name: Upload Release
         uses: softprops/action-gh-release@v3
