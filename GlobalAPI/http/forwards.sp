@@ -6,23 +6,13 @@ public void Global_HTTP_Started(Handle request, GlobalAPIRequestData hData)
     Call_Global_OnRequestStarted(request, hData);
 }
 
-public int Global_HTTP_Headers(Handle request, bool failure, GlobalAPIRequestData hData)
-{
-    GlobalAPI_DebugMessage("HTTP Response headers received...");
-}
-
-public int Global_HTTP_Completed(Handle request, bool failure, bool requestSuccessful, EHTTPStatusCode statusCode, GlobalAPIRequestData hData)
+public void Global_HTTP_Completed(Handle request, bool failure, bool requestSuccessful, EHTTPStatusCode statusCode, GlobalAPIRequestData hData)
 {
     hData.Status = view_as<int>(statusCode);
     hData.Failure = (failure || !requestSuccessful || statusCode != k_EHTTPStatusCode200OK);
     hData.ResponseTime = CalculateResponseTime(hData);
 
     Call_Global_OnRequestFinished(request, hData);
-}
-
-public int Global_HTTP_DataReceived(Handle request, bool failure, int offset, int bytesReceived, GlobalAPIRequestData hData)
-{
-    GlobalAPI_DebugMessage("HTTP Response data received...");
 
     if (hData.Failure)
     {
@@ -42,14 +32,18 @@ public int Global_HTTP_DataReceived(Handle request, bool failure, int offset, in
         else
         {
             hData.SetHandle("_requestHandle", request);
-            SteamWorks_GetHTTPResponseBodyCallback(request, Global_HTTP_Data, hData);
+            if (!SteamWorks_GetHTTPResponseBodyCallback(request, Global_HTTP_Data, hData))
+            {
+                hData.Remove("_requestHandle");
+                CallForward_NoResponse(hData);
+            }
         }
     }
 
     delete request;
 }
 
-public int Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
+public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
 {
     GlobalAPI_DebugMessage("HTTP Response data...");
 
