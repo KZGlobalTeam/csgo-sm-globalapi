@@ -3,14 +3,14 @@ This is a complete rewrite (v2) of [GlobalAPI plugin](https://bitbucket.org/kzti
 
 ## **Dependencies**
 
-* **SourceMod 1.10+**
-* **[SteamWorks 1.2.3+](https://forums.alliedmods.net/showthread.php?t=229556)**
+* **SourceMod 1.11+**
+* **[SteamWorks 1.2.164+](https://github.com/alliedmodders/SM-SteamWorks)**
 
 ---
 
 ## **Installation**
 1. Ensure above dependencies are installed.
-2. Download [the latest release](https://bitbucket.org/kztimerglobalteam/globalapi-smplugin/downloads/GlobalAPI-latest.zip).
+2. Download the archive from [the latest release](https://github.com/KZGlobalTeam/csgo-sm-globalapi/releases/latest).
 3. Extract the release into `/csgo`.
 4. Optional, but recommended: Place your API key into `cfg/sourcemod/globalapi-key.cfg`.
     - `addons/sourcemod/configs/globalapi-key.cfg` is also a valid location if you need it.
