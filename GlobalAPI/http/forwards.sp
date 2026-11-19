@@ -67,6 +67,11 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
     else
     {
         hJson = json_decode(response);
+
+        if (hJson == null)
+        {
+            hJson = DecodeBareValue(response);
+        }
     }
 
     any data = hData.Data;
@@ -85,6 +90,25 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
 }
 
 // =====[ PRIVATE ]=====
+
+// records/place returns a bare number, which json_decode does not accept,
+// so it is passed on as {"result": value}
+static JSON_Object DecodeBareValue(const char[] response)
+{
+    int length = strlen(response) + 12;
+    char[] wrapped = new char[length];
+    FormatEx(wrapped, length, "{\"result\":%s}", response);
+
+    JSON_Object hJson = json_decode(wrapped);
+
+    // A "null" response stays null, callers check for that
+    if (hJson != null && hJson.GetType("result") == JSON_Type_Object)
+    {
+        json_cleanup_and_delete(hJson);
+    }
+
+    return hJson;
+}
 
 static int CalculateResponseTime(GlobalAPIRequestData hData)
 {
