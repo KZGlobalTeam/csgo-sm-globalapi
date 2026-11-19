@@ -29,15 +29,15 @@ public void Global_HTTP_Completed(Handle request, bool failure, bool requestSucc
         {
             CallForward_NoResponse(hData);
         }
-        else
+        // Replays are larger than the plugin heap, so they never pass through a string
+        else if (hData.AcceptType == GlobalAPIRequestAcceptType_OctetStream)
         {
-            hData.SetInt("_requestHandle", view_as<int>(request));
-            hData.SetHidden("_requestHandle", true);
-            if (!SteamWorks_GetHTTPResponseBodyCallback(request, Global_HTTP_Data, hData))
-            {
-                hData.Remove("_requestHandle");
-                CallForward_NoResponse(hData);
-            }
+            SaveResponseBody(request, hData);
+            CallForward_NoResponse(hData);
+        }
+        else if (!SteamWorks_GetHTTPResponseBodyCallback(request, Global_HTTP_Data, hData))
+        {
+            CallForward_NoResponse(hData);
         }
     }
 
@@ -48,54 +48,15 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
 {
     GlobalAPI_DebugMessage("HTTP Response data...");
 
-    JSON_Object hJson = null;
+    JSON_Object hJson = json_decode(response);
 
-    if (hData.AcceptType == GlobalAPIRequestContentType_OctetStream)
+    if (hJson == null)
     {
-        char path[PLATFORM_MAX_PATH];
-
-        // Downloads finishing in the same frame get the same time
-        for (int i = 0; ; i++)
-        {
-            BuildPath(Path_SM, path, sizeof(path), "data/GlobalAPI/%d_%f_%d.%s",
-                                                    GetTime(),
-                                                    GetEngineTime(),
-                                                    i,
-                                                    GlobalAPI_Data_File_Extension);
-
-            if (!FileExists(path))
-            {
-                break;
-            }
-        }
-
-        Handle request = view_as<Handle>(hData.GetInt("_requestHandle"));
-
-        if (SteamWorks_WriteHTTPResponseBodyToFile(request, path))
-        {
-            hData.AddDataPath(path);
-        }
-        else
-        {
-            LogError("[GlobalAPI] Could not write response body to %s", path);
-        }
-    }
-
-    else
-    {
-        hJson = json_decode(response);
-
-        if (hJson == null)
-        {
-            hJson = DecodeBareValue(response);
-        }
+        hJson = DecodeBareValue(response);
     }
 
     any data = hData.Data;
     Handle hFwd = hData.Callback;
-
-    // Remove temporary key
-    hData.Remove("_requestHandle");
 
     CallForward(hFwd, hJson, hData, data);
 
@@ -107,6 +68,35 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
 }
 
 // =====[ PRIVATE ]=====
+
+static void SaveResponseBody(Handle request, GlobalAPIRequestData hData)
+{
+    char path[PLATFORM_MAX_PATH];
+
+    // Downloads finishing in the same frame get the same time
+    for (int i = 0; ; i++)
+    {
+        BuildPath(Path_SM, path, sizeof(path), "data/GlobalAPI/%d_%f_%d.%s",
+                                                GetTime(),
+                                                GetEngineTime(),
+                                                i,
+                                                GlobalAPI_Data_File_Extension);
+
+        if (!FileExists(path))
+        {
+            break;
+        }
+    }
+
+    if (SteamWorks_WriteHTTPResponseBodyToFile(request, path))
+    {
+        hData.AddDataPath(path);
+    }
+    else
+    {
+        LogError("[GlobalAPI] Could not write response body to %s", path);
+    }
+}
 
 // records/place returns a bare number, which json_decode does not accept,
 // so it is passed on as {"result": value}
