@@ -118,6 +118,11 @@ void DoLog(LogType type, GlobalAPIRequestData hData)
     FormatEx(method, sizeof(method), gC_HTTPMethods[hData.RequestType]);
 
     File file = OpenFile(logPath, "a+");
+    if (file == null)
+    {
+        LogError("Could not open log file %s", logPath);
+        return;
+    }
 
     file.WriteLine("%s HTTP %s %s", logPrefix, method, gC_LogTypes[type]);
     file.WriteLine("%s  - Callee: %s (V.%s)", logPrefix, pluginName, pluginVersion);
