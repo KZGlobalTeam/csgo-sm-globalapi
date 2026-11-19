@@ -24,6 +24,12 @@ bool ReadAPIKey()
     file.ReadLine(gC_apiKey, sizeof(gC_apiKey));
     delete file;
 
+    // Some editors save the file with a UTF-8 BOM
+    if ((gC_apiKey[0] & 0xFF) == 0xEF && (gC_apiKey[1] & 0xFF) == 0xBB && (gC_apiKey[2] & 0xFF) == 0xBF)
+    {
+        strcopy(gC_apiKey, sizeof(gC_apiKey), gC_apiKey[3]);
+    }
+
     TrimString(gC_apiKey);
     return !StrEqual(gC_apiKey, "");
 }
