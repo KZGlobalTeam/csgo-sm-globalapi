@@ -549,7 +549,7 @@ static void AppendToQueryString(int &index, char[] buffer, int maxlength, char[]
 {
     int encodedLength = (strlen(value) * 3) + 1;
     char[] encodedValue = new char[encodedLength];
-    URLEncode(value, encodedValue, encodedLength);
+    GlobalAPI_URLEncode(value, encodedValue, encodedLength);
 
     if (index == 0)
     {

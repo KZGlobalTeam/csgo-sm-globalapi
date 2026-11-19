@@ -62,7 +62,7 @@ void FormatPathParam(char[] buffer, int maxlength, char[] param, char[] value = 
     {
         int encodedLength = (strlen(value) * 3) + 1;
         char[] encodedValue = new char[encodedLength];
-        URLEncode(value, encodedValue, encodedLength);
+        GlobalAPI_URLEncode(value, encodedValue, encodedLength);
 
         ReplaceString(buffer, maxlength, paramKey, encodedValue);
     }

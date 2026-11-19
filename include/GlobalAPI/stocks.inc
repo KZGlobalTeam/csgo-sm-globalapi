@@ -72,7 +72,7 @@ stock void GetMapFullPath(char[] buffer, int maxlength)
  * @param character             Character to check
  * @return                      Whether the character is url safe
  */
-stock bool IsUrlSafeChar(int character)
+stock bool GlobalAPI_IsUrlSafeChar(int character)
 {
     // Control characters, space and anything non-ascii
     if (character <= 0x20 || character >= 0x7F)
@@ -100,7 +100,7 @@ stock bool IsUrlSafeChar(int character)
  * @param maxlength             Max length of the buffer
  * @noreturn
  */
-stock void URLEncode(const char[] value, char[] buffer, int maxlength)
+stock void GlobalAPI_URLEncode(const char[] value, char[] buffer, int maxlength)
 {
     char hexChars[] = "0123456789ABCDEF";
 
@@ -110,7 +110,7 @@ stock void URLEncode(const char[] value, char[] buffer, int maxlength)
     {
         int character = value[i] & 0xFF;
 
-        if (IsUrlSafeChar(character))
+        if (GlobalAPI_IsUrlSafeChar(character))
         {
             if (pos + 1 >= maxlength)
             {
