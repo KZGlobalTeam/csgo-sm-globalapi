@@ -78,7 +78,7 @@ enum
     Function types when API call finishes
 
     hResponse is null when the request failed, the response was empty or "null",
-    it could not be decoded, or it was a download (file path in hData "dataFilePath").
+    it could not be decoded, or it was a download (file path in hData "dataFilePath", unset if not written).
     Both handles are freed after the callback returns.
     The callback is not called when the native returned false.
 */

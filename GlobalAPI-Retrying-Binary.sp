@@ -258,7 +258,7 @@ public Action CheckForRequests(Handle timer)
     return Plugin_Continue;
 }
 
-// isCorrupt is set for files that cannot be read as requests
+// isCorrupt is set for files that cannot be read as requests, unknown format versions are skipped
 public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &isCorrupt)
 {
     isCorrupt = false;
