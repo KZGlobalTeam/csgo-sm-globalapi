@@ -212,12 +212,14 @@ public Action CheckForRequests(Handle timer)
     }
 
     DeleteFile(dataFile);
-    GlobalAPI_SendRequest(requestData);
 
-    // Delete body file if it exists after sending the request
     char bodyFilePath[PLATFORM_MAX_PATH];
     requestData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
 
+    // GlobalAPI has freed requestData if this fails
+    GlobalAPI_SendRequest(requestData);
+
+    // Delete body file if it exists after sending the request
     if (bodyFilePath[0] != '\0' && FileExists(bodyFilePath))
     {
         DeleteFile(bodyFilePath);
