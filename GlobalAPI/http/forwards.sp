@@ -69,10 +69,16 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
             }
         }
 
-        hData.AddDataPath(path);
-
         Handle request = view_as<Handle>(hData.GetInt("_requestHandle"));
-        SteamWorks_WriteHTTPResponseBodyToFile(request, path);
+
+        if (SteamWorks_WriteHTTPResponseBodyToFile(request, path))
+        {
+            hData.AddDataPath(path);
+        }
+        else
+        {
+            LogError("[GlobalAPI] Could not write response body to %s", path);
+        }
     }
 
     else
