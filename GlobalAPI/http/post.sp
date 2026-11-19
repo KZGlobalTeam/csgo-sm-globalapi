@@ -34,7 +34,7 @@ bool HTTPPost(GlobalAPIRequestData hData)
     }
     else
     {
-        int maxlength = hData.BodyLength;
+        int maxlength = json_encode_size(hData);
         char[] body = new char[maxlength];
 
         hData.Encode(body, maxlength);
