@@ -1,7 +1,7 @@
 // ====================== DEFINITIONS ======================== //
 
 #define DATA_PATH "data/GlobalAPI-Retrying"
-#define DATA_FILE "retrying_{timestamp}_{gametick}.dat"
+#define DATA_FILE "retrying_%s_%s_%d.dat"
 
 #define MAGIC_BYTES 0x676c6f62616c617069
 #define FORMAT_VERSION 2
@@ -91,12 +91,23 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
     char szGameTime[32];
     FloatToString(GetEngineTime(), szGameTime, sizeof(szGameTime));
 
-    char dataFile[PLATFORM_MAX_PATH] = DATA_FILE;
-    ReplaceString(dataFile, sizeof(dataFile), "{gametick}", szGameTime);
-    ReplaceString(dataFile, sizeof(dataFile), "{timestamp}", szTimestamp);
-
+    char dataFile[PLATFORM_MAX_PATH];
     char path[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, path, sizeof(path), "%s/%s", DATA_PATH, dataFile);
+    char bodyFilePath[PLATFORM_MAX_PATH];
+
+    // Requests failing in the same frame get the same time,
+    // and a body copy can outlive its data file
+    for (int i = 0; ; i++)
+    {
+        FormatEx(dataFile, sizeof(dataFile), DATA_FILE, szTimestamp, szGameTime, i);
+        BuildPath(Path_SM, path, sizeof(path), "%s/%s", DATA_PATH, dataFile);
+        BuildPath(Path_SM, bodyFilePath, sizeof(bodyFilePath), "%s/files/%s", DATA_PATH, dataFile);
+
+        if (!FileExists(path) && !FileExists(bodyFilePath))
+        {
+            break;
+        }
+    }
 
     File binaryFile = OpenFile(path, "a+");
     if (binaryFile == null)
@@ -104,8 +115,6 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
         LogError("Could not open or create binary file %s", path);
         return;
     }
-
-    char bodyFilePath[PLATFORM_MAX_PATH];
 
     // Assume binary files have been set as files
     if (hData.ContentType == GlobalAPIRequestContentType_OctetStream && hData.IsRetried)
@@ -117,8 +126,6 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
     {
         char srcFilePath[PLATFORM_MAX_PATH];
         hData.GetBodyFile(srcFilePath, sizeof(srcFilePath));
-
-        BuildPath(Path_SM, bodyFilePath, sizeof(bodyFilePath), "%s/files/%s", DATA_PATH, dataFile);
 
         File srcFile = OpenFile(srcFilePath, "rb");
         File destFile = OpenFile(bodyFilePath, "wb");
@@ -148,6 +155,10 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
             DeleteFile(bodyFilePath);
             return;
         }
+    }
+    else
+    {
+        bodyFilePath[0] = '\0';
     }
 
     char url[GlobalAPI_Max_BaseUrl_Length];
