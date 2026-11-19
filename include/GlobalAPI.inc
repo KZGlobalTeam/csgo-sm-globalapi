@@ -26,7 +26,7 @@ static int DEFAULT_INT_ARRAY[1] = { -1 };
 #define GlobalAPI_Staging_BaseUrl "https://staging.kztimerglobal.com/api/" ... GlobalAPI_Backend_Staging_Version
 
 #define GlobalAPI_Max_BaseUrl_Length 128
-#define GlobalAPI_Max_QueryParam_Num 20
+#define GlobalAPI_Max_QueryParam_Num 128
 #define GlobalAPI_Max_QueryParam_Length 64
 #define GlobalAPI_Max_QueryParams_Length (GlobalAPI_Max_QueryParam_Num * GlobalAPI_Max_QueryParam_Length)
 #define GlobalAPI_Max_QueryUrl_Length (GlobalAPI_Max_QueryParams_Length + GlobalAPI_Max_BaseUrl_Length)
