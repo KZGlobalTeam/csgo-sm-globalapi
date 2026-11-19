@@ -124,6 +124,12 @@ public int Native_SendRequest(Handle plugin, int numParams)
 {
     GlobalAPIRequestData hData = GetNativeCell(1);
 
+    // Only the owner can delete a handle, so other plugins' requests are sent as our copy
+    if (plugin != GetMyHandle())
+    {
+        hData = view_as<GlobalAPIRequestData>(hData.DeepCopy());
+    }
+
     switch (hData.RequestType)
     {
         case GlobalAPIRequestType_GET: return HTTPGet(hData);

@@ -246,8 +246,11 @@ public Action CheckForRequests(Handle timer)
     char bodyFilePath[PLATFORM_MAX_PATH];
     requestData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
 
-    // GlobalAPI has freed requestData if this fails
-    if (!GlobalAPI_SendRequest(requestData) && bodyFilePath[0] != '\0')
+    // GlobalAPI sends a copy
+    bool sent = GlobalAPI_SendRequest(requestData);
+    json_cleanup_and_delete(requestData);
+
+    if (!sent && bodyFilePath[0] != '\0')
     {
         DeleteFile(bodyFilePath);
     }
