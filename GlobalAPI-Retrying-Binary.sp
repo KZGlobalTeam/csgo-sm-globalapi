@@ -317,11 +317,12 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
     int requestType;
     ok = ok && file.ReadInt8(requestType);
 
+    // Windows text mode ends a 2.0.6 file early at a 0x1A byte, resending does not need these two
     int bodyLength;
-    ok = ok && file.ReadInt32(bodyLength);
+    ok = ok && (file.ReadInt32(bodyLength) || legacy);
 
     int timestamp;
-    ok = ok && file.ReadInt32(timestamp);
+    ok = ok && (file.ReadInt32(timestamp) || legacy);
 
     length = 0;
     ok = ok && (legacy || ReadLength(file, false, fileSize, length));
