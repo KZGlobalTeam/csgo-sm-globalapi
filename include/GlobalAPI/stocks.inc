@@ -48,7 +48,7 @@ stock void GetMapDisplay(char[] buffer, int maxlength)
     GetCurrentMap(map, sizeof(map));
     GetMapDisplayName(map, map, sizeof(map));
 
-    FormatEx(buffer, maxlength, map);
+    strcopy(buffer, maxlength, map);
 }
 
 /**
