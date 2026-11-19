@@ -66,7 +66,7 @@ public void OnPluginStart()
         SetFailState("Failed to create directory %s", gC_LogsDir);
     }
 
-    gCV_LoggingLevel = CreateConVar("globalapi_logging_level", "1", "Logging level", _, true, 0.0, true, 3.0);
+    gCV_LoggingLevel = CreateConVar("globalapi_logging_level", "1", "Logging level: 0 none, 1 failed, 2 + finished, 3 + started", _, true, 0.0, true, 3.0);
 
     AutoExecConfig(true, "globalapi-logging");
 }
@@ -89,7 +89,7 @@ public void GlobalAPI_OnRequestStarted(Handle request, GlobalAPIRequestData hDat
 
 public void GlobalAPI_OnRequestFinished(Handle request, GlobalAPIRequestData hData)
 {
-    if (IsLevelEnabled(LogLevel_Debug))
+    if (IsLevelEnabled(LogLevel_Info))
     {
         DoLog(LogType_Finished, hData);
     }
