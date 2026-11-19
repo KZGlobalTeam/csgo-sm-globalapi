@@ -130,6 +130,7 @@ public int Native_SendRequest(Handle plugin, int numParams)
         case GlobalAPIRequestType_POST: return HTTPPost(hData);
     }
 
+    CleanupRequestData(hData);
     return false;
 }
 
@@ -338,7 +339,7 @@ public int Native_GetJumpstats(Handle plugin, int numParams)
     GetNativeString(9, jumpTypeList, sizeof(jumpTypeList));
 
     float greaterThanDistance = GetNativeCell(10);
-    float lowerThanDistance = GetNativeCell(11);
+    float lessThanDistance = GetNativeCell(11);
 
     bool isMsl = GetNativeCell(12);
     bool isCrouchBind = GetNativeCell(13);
@@ -365,7 +366,7 @@ public int Native_GetJumpstats(Handle plugin, int numParams)
     hData.AddString("steamid64_list", steamId64List);
     hData.AddString("jumptype_list", jumpTypeList);
     hData.AddFloat("greater_than_distance", greaterThanDistance);
-    hData.AddFloat("lower_than_distance", lowerThanDistance);
+    hData.AddFloat("less_than_distance", lessThanDistance);
     hData.AddBool("is_msl", isMsl);
     hData.AddBool("is_crouch_bind", isCrouchBind);
     hData.AddBool("is_forward_bind", isForwardBind);
@@ -1073,24 +1074,19 @@ public int Native_GetRecordsTopWorldRecords(Handle plugin, int numParams)
     any data = GetNativeCell(2);
 
     int ids[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(3, ids, sizeof(ids));
-    int idsLength = GetNativeCell(4);
+    int idsLength = GetNativeIntArray(3, 4, ids, sizeof(ids));
 
     int mapIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(5, mapIds, sizeof(mapIds));
-    int mapIdsLength = GetNativeCell(6);
+    int mapIdsLength = GetNativeIntArray(5, 6, mapIds, sizeof(mapIds));
 
     int stages[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(7, stages, sizeof(stages));
-    int stagesLength = GetNativeCell(8);
+    int stagesLength = GetNativeIntArray(7, 8, stages, sizeof(stages));
 
     int modeIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(9, modeIds, sizeof(modeIds));
-    int modeIdsLength = GetNativeCell(10);
+    int modeIdsLength = GetNativeIntArray(9, 10, modeIds, sizeof(modeIds));
 
     int tickRates[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(11, tickRates, sizeof(tickRates));
-    int tickRatesLength = GetNativeCell(12);
+    int tickRatesLength = GetNativeIntArray(11, 12, tickRates, sizeof(tickRates));
 
     bool hasTeleports = GetNativeCell(13);
 
@@ -1256,24 +1252,19 @@ public int Native_GetPlayerRanks(Handle plugin, int numParams)
     GetNativeString(7, steamId64List, sizeof(steamId64List));
 
     int recordFilterIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(8, recordFilterIds, sizeof(recordFilterIds));
-    int recordFilterIdsLength = GetNativeCell(9);
+    int recordFilterIdsLength = GetNativeIntArray(8, 9, recordFilterIds, sizeof(recordFilterIds));
 
     int mapIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(10, mapIds, sizeof(mapIds));
-    int mapIdsLength = GetNativeCell(11);
+    int mapIdsLength = GetNativeIntArray(10, 11, mapIds, sizeof(mapIds));
 
     int stages[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(12, stages, sizeof(stages));
-    int stagesLength = GetNativeCell(13);
+    int stagesLength = GetNativeIntArray(12, 13, stages, sizeof(stages));
 
     int modeIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(14, modeIds, sizeof(modeIds));
-    int modeIdsLength = GetNativeCell(15);
+    int modeIdsLength = GetNativeIntArray(14, 15, modeIds, sizeof(modeIds));
 
     int tickRates[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(16, tickRates, sizeof(tickRates));
-    int tickRatesLength = GetNativeCell(17);
+    int tickRatesLength = GetNativeIntArray(16, 17, tickRates, sizeof(tickRates));
 
     bool hasTeleports = GetNativeCell(18);
     int offset = GetNativeCell(19);
@@ -1319,24 +1310,19 @@ public int Native_GetRecordFilters(Handle plugin, int numParams)
     any data = GetNativeCell(2);
 
     int ids[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(3, ids, sizeof(ids));
-    int idsLength = GetNativeCell(4);
+    int idsLength = GetNativeIntArray(3, 4, ids, sizeof(ids));
 
     int mapIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(5, mapIds, sizeof(mapIds));
-    int mapIdsLength = GetNativeCell(6);
+    int mapIdsLength = GetNativeIntArray(5, 6, mapIds, sizeof(mapIds));
 
     int stages[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(7, stages, sizeof(stages));
-    int stagesLength = GetNativeCell(8);
+    int stagesLength = GetNativeIntArray(7, 8, stages, sizeof(stages));
 
     int modeIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(9, modeIds, sizeof(modeIds));
-    int modeIdsLength = GetNativeCell(10);
+    int modeIdsLength = GetNativeIntArray(9, 10, modeIds, sizeof(modeIds));
 
     int tickRates[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(11, tickRates, sizeof(tickRates));
-    int tickRatesLength = GetNativeCell(12);
+    int tickRatesLength = GetNativeIntArray(11, 12, tickRates, sizeof(tickRates));
 
     bool hasTeleports = GetNativeCell(13);
     bool isOverall = GetNativeCell(14);
@@ -1375,24 +1361,19 @@ public int Native_GetRecordFilterDistributions(Handle plugin, int numParams)
     any data = GetNativeCell(2);
 
     int ids[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(3, ids, sizeof(ids));
-    int idsLength = GetNativeCell(4);
+    int idsLength = GetNativeIntArray(3, 4, ids, sizeof(ids));
 
     int mapIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(5, mapIds, sizeof(mapIds));
-    int mapIdsLength = GetNativeCell(6);
+    int mapIdsLength = GetNativeIntArray(5, 6, mapIds, sizeof(mapIds));
 
     int stages[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(7, stages, sizeof(stages));
-    int stagesLength = GetNativeCell(8);
+    int stagesLength = GetNativeIntArray(7, 8, stages, sizeof(stages));
 
     int modeIds[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(9, modeIds, sizeof(modeIds));
-    int modeIdsLength = GetNativeCell(10);
+    int modeIdsLength = GetNativeIntArray(9, 10, modeIds, sizeof(modeIds));
 
     int tickRates[GlobalAPI_Max_QueryParam_Array_Length];
-    GetNativeArray(11, tickRates, sizeof(tickRates));
-    int tickRatesLength = GetNativeCell(12);
+    int tickRatesLength = GetNativeIntArray(11, 12, tickRates, sizeof(tickRates));
 
     bool hasTeleports = GetNativeCell(13);
     bool isOverall = GetNativeCell(14);

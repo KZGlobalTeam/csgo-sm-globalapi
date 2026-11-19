@@ -15,7 +15,7 @@
 
 static int DEFAULT_INT_ARRAY[1] = { -1 };
 
-#define GlobalAPI_Plugin_Version "2.0.6"
+#define GlobalAPI_Plugin_Version "2.1.0"
 #define GlobalAPI_Plugin_Desc "Plugin helper for GlobalAPI Production & Staging"
 #define GlobalAPI_Plugin_Url "https://bitbucket.org/kztimerglobalteam/GlobalAPI-SMPlugin"
 #define GlobalAPI_Plugin_NameVersion "GlobalAPI Plugin " ... GlobalAPI_Plugin_Version
@@ -82,11 +82,30 @@ typeset OnAPICallFinished
     /**
     * Called when an API call has finished
     *
+    * @param hResponse      JSON_Array handle to the response
+    * @param hData          GlobalAPIRequestData handle for the request
+    * @noreturn
+    */
+    function void (JSON_Array hResponse, GlobalAPIRequestData hData);
+
+    /**
+    * Called when an API call has finished
+    *
     * @param hResponse      JSON_Object handle to the response
     * @param hData          GlobalAPIRequestData handle for the request
     * @noreturn
     */
     function void (JSON_Object hResponse, GlobalAPIRequestData hData);
+
+    /**
+    * Called when an API call has finished
+    *
+    * @param hResponse      JSON_Array handle to the response
+    * @param hData          GlobalAPIRequestData handle for the request
+    * @param data           Optional data that was passed
+    * @noreturn
+    */
+    function void (JSON_Array hResponse, GlobalAPIRequestData hData, any data);
 
     /**
     * Called when an API call has finished
@@ -922,6 +941,7 @@ public void __pl_GlobalAPI_SetNTVOptional()
 
     // Jumpstats
     MarkNativeAsOptional("GlobalAPI_GetJumpstats");
+    MarkNativeAsOptional("GlobalAPI_CreateJumpstat");
     MarkNativeAsOptional("GlobalAPI_GetJumpstatTop");
     MarkNativeAsOptional("GlobalAPI_GetJumpstatTop30");
 
