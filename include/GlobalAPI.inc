@@ -128,6 +128,7 @@ typeset OnAPICallFinished
  * Called when GlobalAPI plugin is initialized,
  * this means API Key is loaded and all the cvars are loaded
  *
+ * @note                Called again on every map change
  * @noreturn
  */
 forward void GlobalAPI_OnInitialized();
