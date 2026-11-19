@@ -761,7 +761,7 @@ native bool GlobalAPI_GetServersByName(OnAPICallFinished callback = INVALID_FUNC
  * @param averageGreaterThan    Average greater than to query
  * @param ratingGreaterThan     Rating greater than to query
  * @param finishesGreaterThan   Finishes greater than to query
- * @param steamId64List         Comma-separated stirng of steamid64s to query
+ * @param steamId64List         Comma-separated string of steamid64s to query
  * @param recordFilterIds       Array of record filter ids to query
  * @param recordFilterIdsLength Length of the record filter ids array
  * @param mapIds                Array of map ids to query
