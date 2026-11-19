@@ -3,7 +3,7 @@
 #define DATA_PATH "data/GlobalAPI-Retrying"
 #define DATA_FILE "retrying_%s_%s_%d.dat"
 
-#define MAGIC_BYTES 0x676c6f62616c617069
+#define MAGIC_BYTES 0x6c617069
 #define FORMAT_VERSION 2
 
 // =========================================================== //
