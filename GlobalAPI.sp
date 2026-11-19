@@ -12,7 +12,7 @@
 
 // ====================== FORMATTING ========================= //
 
-#pragma dynamic 131072
+#pragma dynamic 1048576
 #pragma newdecls required
 
 // ====================== VARIABLES ========================== //
