@@ -1286,7 +1286,8 @@ public int Native_GetPlayerRanks(Handle plugin, int numParams)
 
     // Add comma-separated steamid64s
     char steamId64s[GlobalAPI_Max_QueryParam_Array_Length][GlobalAPI_Max_QueryParam_Length];
-    int count = ExplodeString(steamId64List, ",", steamId64s, sizeof(steamId64s), sizeof(steamId64s[]));
+    // An empty list would send "steamid64s=", which the API rejects
+    int count = steamId64List[0] == '\0' ? 0 : ExplodeString(steamId64List, ",", steamId64s, sizeof(steamId64s), sizeof(steamId64s[]));
 
     hData.AddStringArray("steamid64s", steamId64s, count);
 
