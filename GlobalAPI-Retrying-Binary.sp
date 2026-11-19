@@ -60,6 +60,21 @@ public void GlobalAPI_OnRequestFailed(Handle request, GlobalAPIRequestData hData
     }
 }
 
+// A retried request's body copy is kept only for its next retry
+public void GlobalAPI_OnRequestFinished(Handle request, GlobalAPIRequestData hData)
+{
+    if (hData.IsRetried && !(hData.Failure && IsRetryableRequest(hData)))
+    {
+        char bodyFilePath[PLATFORM_MAX_PATH];
+        hData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
+
+        if (bodyFilePath[0] != '\0')
+        {
+            DeleteFile(bodyFilePath);
+        }
+    }
+}
+
 bool IsRetryableRequest(GlobalAPIRequestData hData)
 {
     int status = hData.Status;
@@ -93,7 +108,12 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
     char bodyFilePath[PLATFORM_MAX_PATH];
 
     // Assume binary files have been set as files
-    if (hData.ContentType == GlobalAPIRequestContentType_OctetStream)
+    if (hData.ContentType == GlobalAPIRequestContentType_OctetStream && hData.IsRetried)
+    {
+        // Already our copy, GlobalAPI_OnRequestFinished kept it
+        hData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
+    }
+    else if (hData.ContentType == GlobalAPIRequestContentType_OctetStream)
     {
         char srcFilePath[PLATFORM_MAX_PATH];
         hData.GetBodyFile(srcFilePath, sizeof(srcFilePath));
@@ -217,10 +237,7 @@ public Action CheckForRequests(Handle timer)
     requestData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
 
     // GlobalAPI has freed requestData if this fails
-    GlobalAPI_SendRequest(requestData);
-
-    // Delete body file if it exists after sending the request
-    if (bodyFilePath[0] != '\0' && FileExists(bodyFilePath))
+    if (!GlobalAPI_SendRequest(requestData) && bodyFilePath[0] != '\0')
     {
         DeleteFile(bodyFilePath);
     }
