@@ -110,7 +110,7 @@ public Action Command_Info(int client, int args)
 public Action Command_ReloadAPIKey(int client, int args)
 {
     gB_usingAPIKey = ReadAPIKey();
-    ReplyToCommand(client, "[GlobalAPI] API Key reloaded!");
+    ReplyToCommand(client, gB_usingAPIKey ? "[GlobalAPI] API Key reloaded!" : "[GlobalAPI] No API Key found!");
 
     return Plugin_Handled;
 }
