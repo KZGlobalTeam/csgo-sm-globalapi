@@ -277,7 +277,8 @@ methodmap GlobalAPIRequestData < JSON_Object
     {
         public get()
         {
-            return view_as<Handle>(this.GetInt("callback"));
+            // Requests built without CreateRequestData may have none
+            return view_as<Handle>(this.GetInt("callback", 0));
         }
         public set(Handle hFwd)
         {
