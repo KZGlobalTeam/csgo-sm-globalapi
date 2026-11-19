@@ -109,7 +109,7 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
         }
     }
 
-    File binaryFile = OpenFile(path, "a+");
+    File binaryFile = OpenFile(path, "wb");
     if (binaryFile == null)
     {
         LogError("Could not open or create binary file %s", path);
@@ -261,7 +261,8 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
 {
     isCorrupt = false;
 
-    File file = OpenFile(filePath, "r");
+    // Binary mode, in text mode Windows ends the read at a 0x1A byte
+    File file = OpenFile(filePath, "rb");
     if (file == null)
     {
         LogError("Could not open binary file %s", filePath);
