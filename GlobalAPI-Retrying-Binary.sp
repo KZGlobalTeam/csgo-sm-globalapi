@@ -257,20 +257,23 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
         return null;
     }
 
+    // Files from 2.0.6 and earlier have no header and no body file
     int magicBytes;
-    if (!file.ReadInt32(magicBytes) || magicBytes != MAGIC_BYTES)
-    {
-        // Not a retrying file?
-        delete file;
-        return null;
-    }
+    bool legacy = !file.ReadInt32(magicBytes) || magicBytes != MAGIC_BYTES;
 
-    int formatVersion;
-    if (!file.ReadInt8(formatVersion) || formatVersion != FORMAT_VERSION)
+    if (legacy)
     {
-        // Unsupported format version
-        delete file;
-        return null;
+        file.Seek(0, SEEK_SET);
+    }
+    else
+    {
+        int formatVersion;
+        if (!file.ReadInt8(formatVersion) || formatVersion != FORMAT_VERSION)
+        {
+            // Unsupported format version
+            delete file;
+            return null;
+        }
     }
 
     int fileSize = FileSize(filePath);
@@ -299,7 +302,8 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
     int timestamp;
     ok = ok && file.ReadInt32(timestamp);
 
-    ok = ok && ReadLength(file, false, fileSize, length);
+    length = 0;
+    ok = ok && (legacy || ReadLength(file, false, fileSize, length));
     char[] bodyFilePath = new char[length + 1];
     ok = ok && file.ReadString(bodyFilePath, length + 1, length) == length;
     bodyFilePath[length] = '\0';
