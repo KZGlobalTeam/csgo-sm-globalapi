@@ -317,6 +317,8 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
     if (strlen(bodyFilePath) > 0)
     {
         hData.AddBodyFile(bodyFilePath);
+        // contentType is hidden, so the saved params lack it
+        hData.ContentType = GlobalAPIRequestContentType_OctetStream;
     }
 
     delete file;
