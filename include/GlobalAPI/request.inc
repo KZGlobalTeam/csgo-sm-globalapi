@@ -177,8 +177,13 @@ methodmap GlobalAPIRequest < Handle
     */
     public bool Send(GlobalAPIRequestData hData)
     {
+        if (!SteamWorks_SendHTTPRequest(this))
+        {
+            return false;
+        }
+
         Call_Private_OnHTTPStart(this, hData);
-        return SteamWorks_SendHTTPRequest(this);
+        return true;
     }
 }
 
