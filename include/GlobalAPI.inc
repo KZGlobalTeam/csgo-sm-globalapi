@@ -78,7 +78,8 @@ enum
     Function types when API call finishes
 
     hResponse is null when the request failed, the response was empty or "null",
-    or it could not be decoded. Both handles are freed after the callback returns.
+    it could not be decoded, or it was a download (file path in hData "dataFilePath").
+    Both handles are freed after the callback returns.
     The callback is not called when the native returned false.
 */
 typeset OnAPICallFinished

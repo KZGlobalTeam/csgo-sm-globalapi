@@ -258,7 +258,7 @@ public Action CheckForRequests(Handle timer)
     return Plugin_Continue;
 }
 
-// isCorrupt is only set for files that are ours, but cannot be read as requests
+// isCorrupt is set for files that cannot be read as requests
 public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &isCorrupt)
 {
     isCorrupt = false;
