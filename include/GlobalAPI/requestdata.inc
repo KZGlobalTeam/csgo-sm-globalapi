@@ -277,7 +277,8 @@ methodmap GlobalAPIRequestData < JSON_Object
     {
         public get()
         {
-            return view_as<Handle>(this.GetInt("callback"));
+            // Requests built by other plugins may not set one
+            return view_as<Handle>(this.GetInt("callback", 0));
         }
         public set(Handle hFwd)
         {

@@ -3,7 +3,7 @@ ConVar gCV_Staging = null;
 
 void CreateConvars()
 {
-    gCV_Debug = CreateConVar("GlobalAPI_Debug", "0", "", _, true, 0.0, true, 1.0);
+    gCV_Debug = CreateConVar("GlobalAPI_Debug", "0", "Enables debug logging and key-required requests without an API key", _, true, 0.0, true, 1.0);
     gCV_Staging = CreateConVar("GlobalAPI_Staging", "0", "Enables the plugin to use the staging endpoint for API calls", _, true, 0.0, true, 1.0);
 
     gCV_Staging.AddChangeHook(ConVarHook);

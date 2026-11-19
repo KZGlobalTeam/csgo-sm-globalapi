@@ -14,6 +14,17 @@ bool HTTPGet(GlobalAPIRequestData hData)
     hData.GetString("url", requestUrl, sizeof(requestUrl));
     StrCat(requestUrl, sizeof(requestUrl), requestParams);
 
+    // A full buffer means the query was cut
+    if (strlen(requestParams) >= sizeof(requestParams) - 1 || strlen(requestUrl) >= sizeof(requestUrl) - 1)
+    {
+        char endpoint[GlobalAPI_Max_BaseUrl_Length];
+        hData.GetString("endpoint", endpoint, sizeof(endpoint));
+        LogError("[GlobalAPI] Query to \"%s\" is too long", endpoint);
+
+        CleanupRequestData(hData);
+        return false;
+    }
+
     GlobalAPIRequest request = new GlobalAPIRequest(requestUrl, k_EHTTPMethodGET);
 
     if (request == null)

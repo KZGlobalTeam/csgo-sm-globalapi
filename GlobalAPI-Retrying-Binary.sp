@@ -1,9 +1,9 @@
 // ====================== DEFINITIONS ======================== //
 
 #define DATA_PATH "data/GlobalAPI-Retrying"
-#define DATA_FILE "retrying_{timestamp}_{gametick}.dat"
+#define DATA_FILE "retrying_%s_%s_%d.dat"
 
-#define MAGIC_BYTES 0x676c6f62616c617069
+#define MAGIC_BYTES 0x6c617069
 #define FORMAT_VERSION 2
 
 // =========================================================== //
@@ -60,6 +60,21 @@ public void GlobalAPI_OnRequestFailed(Handle request, GlobalAPIRequestData hData
     }
 }
 
+// A retried request's body copy is kept only for its next retry
+public void GlobalAPI_OnRequestFinished(Handle request, GlobalAPIRequestData hData)
+{
+    if (hData.IsRetried && !(hData.Failure && IsRetryableRequest(hData)))
+    {
+        char bodyFilePath[PLATFORM_MAX_PATH];
+        hData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
+
+        if (bodyFilePath[0] != '\0')
+        {
+            DeleteFile(bodyFilePath);
+        }
+    }
+}
+
 bool IsRetryableRequest(GlobalAPIRequestData hData)
 {
     int status = hData.Status;
@@ -76,29 +91,40 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
     char szGameTime[32];
     FloatToString(GetEngineTime(), szGameTime, sizeof(szGameTime));
 
-    char dataFile[PLATFORM_MAX_PATH] = DATA_FILE;
-    ReplaceString(dataFile, sizeof(dataFile), "{gametick}", szGameTime);
-    ReplaceString(dataFile, sizeof(dataFile), "{timestamp}", szTimestamp);
-
+    char dataFile[PLATFORM_MAX_PATH];
     char path[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, path, sizeof(path), "%s/%s", DATA_PATH, dataFile);
+    char bodyFilePath[PLATFORM_MAX_PATH];
 
-    File binaryFile = OpenFile(path, "a+");
+    // Same-frame failures get the same time, and body copies can outlive data files
+    for (int i = 0; ; i++)
+    {
+        FormatEx(dataFile, sizeof(dataFile), DATA_FILE, szTimestamp, szGameTime, i);
+        BuildPath(Path_SM, path, sizeof(path), "%s/%s", DATA_PATH, dataFile);
+        BuildPath(Path_SM, bodyFilePath, sizeof(bodyFilePath), "%s/files/%s", DATA_PATH, dataFile);
+
+        if (!FileExists(path) && !FileExists(bodyFilePath))
+        {
+            break;
+        }
+    }
+
+    File binaryFile = OpenFile(path, "wb");
     if (binaryFile == null)
     {
         LogError("Could not open or create binary file %s", path);
         return;
     }
 
-    char bodyFilePath[PLATFORM_MAX_PATH];
-
     // Assume binary files have been set as files
-    if (hData.ContentType == GlobalAPIRequestContentType_OctetStream)
+    if (hData.ContentType == GlobalAPIRequestContentType_OctetStream && hData.IsRetried)
+    {
+        // Already our copy, GlobalAPI_OnRequestFinished kept it
+        hData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
+    }
+    else if (hData.ContentType == GlobalAPIRequestContentType_OctetStream)
     {
         char srcFilePath[PLATFORM_MAX_PATH];
         hData.GetBodyFile(srcFilePath, sizeof(srcFilePath));
-
-        BuildPath(Path_SM, bodyFilePath, sizeof(bodyFilePath), "%s/files/%s", DATA_PATH, dataFile);
 
         File srcFile = OpenFile(srcFilePath, "rb");
         File destFile = OpenFile(bodyFilePath, "wb");
@@ -128,6 +154,10 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
             DeleteFile(bodyFilePath);
             return;
         }
+    }
+    else
+    {
+        bodyFilePath[0] = '\0';
     }
 
     char url[GlobalAPI_Max_BaseUrl_Length];
@@ -212,13 +242,12 @@ public Action CheckForRequests(Handle timer)
     }
 
     DeleteFile(dataFile);
-    GlobalAPI_SendRequest(requestData);
 
-    // Delete body file if it exists after sending the request
     char bodyFilePath[PLATFORM_MAX_PATH];
     requestData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
 
-    if (bodyFilePath[0] != '\0' && FileExists(bodyFilePath))
+    // GlobalAPI has freed requestData if this fails
+    if (!GlobalAPI_SendRequest(requestData) && bodyFilePath[0] != '\0')
     {
         DeleteFile(bodyFilePath);
     }
@@ -231,27 +260,31 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
 {
     isCorrupt = false;
 
-    File file = OpenFile(filePath, "r");
+    // In text mode Windows stops reading at a 0x1A byte
+    File file = OpenFile(filePath, "rb");
     if (file == null)
     {
         LogError("Could not open binary file %s", filePath);
         return null;
     }
 
+    // Files from 2.0.6 and earlier have no header and no body file
     int magicBytes;
-    if (!file.ReadInt32(magicBytes) || magicBytes != MAGIC_BYTES)
-    {
-        // Not a retrying file?
-        delete file;
-        return null;
-    }
+    bool legacy = !file.ReadInt32(magicBytes) || magicBytes != MAGIC_BYTES;
 
-    int formatVersion;
-    if (!file.ReadInt8(formatVersion) || formatVersion != FORMAT_VERSION)
+    if (legacy)
     {
-        // Unsupported format version
-        delete file;
-        return null;
+        file.Seek(0, SEEK_SET);
+    }
+    else
+    {
+        int formatVersion;
+        if (!file.ReadInt8(formatVersion) || formatVersion != FORMAT_VERSION)
+        {
+            // Unsupported format version
+            delete file;
+            return null;
+        }
     }
 
     int fileSize = FileSize(filePath);
@@ -280,7 +313,8 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
     int timestamp;
     ok = ok && file.ReadInt32(timestamp);
 
-    ok = ok && ReadLength(file, false, fileSize, length);
+    length = 0;
+    ok = ok && (legacy || ReadLength(file, false, fileSize, length));
     char[] bodyFilePath = new char[length + 1];
     ok = ok && file.ReadString(bodyFilePath, length + 1, length) == length;
     bodyFilePath[length] = '\0';
@@ -315,6 +349,8 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
     if (strlen(bodyFilePath) > 0)
     {
         hData.AddBodyFile(bodyFilePath);
+        // contentType is hidden, so the saved params lack it
+        hData.ContentType = GlobalAPIRequestContentType_OctetStream;
     }
 
     delete file;

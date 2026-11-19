@@ -29,15 +29,15 @@ public void Global_HTTP_Completed(Handle request, bool failure, bool requestSucc
         {
             CallForward_NoResponse(hData);
         }
-        else
+        else if (hData.AcceptType == GlobalAPIRequestAcceptType_OctetStream)
         {
-            hData.SetInt("_requestHandle", view_as<int>(request));
-            hData.SetHidden("_requestHandle", true);
-            if (!SteamWorks_GetHTTPResponseBodyCallback(request, Global_HTTP_Data, hData))
-            {
-                hData.Remove("_requestHandle");
-                CallForward_NoResponse(hData);
-            }
+            // Replays can be larger than the plugin heap
+            SaveResponseBody(request, hData);
+            CallForward_NoResponse(hData);
+        }
+        else if (!SteamWorks_GetHTTPResponseBodyCallback(request, Global_HTTP_Data, hData))
+        {
+            CallForward_NoResponse(hData);
         }
     }
 
@@ -48,32 +48,15 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
 {
     GlobalAPI_DebugMessage("HTTP Response data...");
 
-    JSON_Object hJson = null;
+    JSON_Object hJson = json_decode(response);
 
-    if (hData.AcceptType == GlobalAPIRequestContentType_OctetStream)
+    if (hJson == null)
     {
-        char path[PLATFORM_MAX_PATH];
-        BuildPath(Path_SM, path, sizeof(path), "data/GlobalAPI/%d_%f.%s",
-                                                GetTime(),
-                                                GetEngineTime(),
-                                                GlobalAPI_Data_File_Extension);
-
-        hData.AddDataPath(path);
-
-        Handle request = view_as<Handle>(hData.GetInt("_requestHandle"));
-        SteamWorks_WriteHTTPResponseBodyToFile(request, path);
-    }
-
-    else
-    {
-        hJson = json_decode(response);
+        hJson = DecodeBareValue(response);
     }
 
     any data = hData.Data;
     Handle hFwd = hData.Callback;
-
-    // Remove temporary key
-    hData.Remove("_requestHandle");
 
     CallForward(hFwd, hJson, hData, data);
 
@@ -85,6 +68,53 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
 }
 
 // =====[ PRIVATE ]=====
+
+static void SaveResponseBody(Handle request, GlobalAPIRequestData hData)
+{
+    char path[PLATFORM_MAX_PATH];
+
+    // Downloads finishing in the same frame get the same time
+    for (int i = 0; ; i++)
+    {
+        BuildPath(Path_SM, path, sizeof(path), "data/GlobalAPI/%d_%f_%d.%s",
+                                                GetTime(),
+                                                GetEngineTime(),
+                                                i,
+                                                GlobalAPI_Data_File_Extension);
+
+        if (!FileExists(path))
+        {
+            break;
+        }
+    }
+
+    if (SteamWorks_WriteHTTPResponseBodyToFile(request, path))
+    {
+        hData.AddDataPath(path);
+    }
+    else
+    {
+        LogError("[GlobalAPI] Could not write response body to %s", path);
+    }
+}
+
+// records/place returns a bare number, json_decode only takes objects and arrays
+static JSON_Object DecodeBareValue(const char[] response)
+{
+    int length = strlen(response) + 12;
+    char[] wrapped = new char[length];
+    FormatEx(wrapped, length, "{\"result\":%s}", response);
+
+    JSON_Object hJson = json_decode(wrapped);
+
+    // A "null" response stays null
+    if (hJson != null && hJson.GetType("result") == JSON_Type_Object)
+    {
+        json_cleanup_and_delete(hJson);
+    }
+
+    return hJson;
+}
 
 static int CalculateResponseTime(GlobalAPIRequestData hData)
 {

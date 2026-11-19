@@ -17,7 +17,7 @@ static int DEFAULT_INT_ARRAY[1] = { -1 };
 
 #define GlobalAPI_Plugin_Version "2.1.0"
 #define GlobalAPI_Plugin_Desc "Plugin helper for GlobalAPI Production & Staging"
-#define GlobalAPI_Plugin_Url "https://bitbucket.org/kztimerglobalteam/GlobalAPI-SMPlugin"
+#define GlobalAPI_Plugin_Url "https://github.com/KZGlobalTeam/csgo-sm-globalapi"
 #define GlobalAPI_Plugin_NameVersion "GlobalAPI Plugin " ... GlobalAPI_Plugin_Version
 
 #define GlobalAPI_Backend_Version "v2.0"
@@ -76,6 +76,10 @@ enum
 
 /*
     Function types when API call finishes
+
+    hResponse is null when the request failed, the response was empty or "null",
+    or it could not be decoded. Both handles are freed after the callback returns.
+    The callback is not called when the native returned false.
 */
 typeset OnAPICallFinished
 {
@@ -124,6 +128,7 @@ typeset OnAPICallFinished
  * Called when GlobalAPI plugin is initialized,
  * this means API Key is loaded and all the cvars are loaded
  *
+ * @note                Called again on every map change
  * @noreturn
  */
 forward void GlobalAPI_OnInitialized();
@@ -201,6 +206,7 @@ native bool GlobalAPI_IsDebugging();
 /**
  * Sends a request in GlobalAPI plugin format
  *
+ * @note                GlobalAPI owns hData after this call, even when it returns false
  * @param hData         Handle to GlobalAPIRequestData
  * @return              Whether the request was sent successfully
  */
@@ -580,6 +586,7 @@ native bool GlobalAPI_CreateRecord(
  * Starts a GET HTTP Request to /api/{version}/records/place/{id}
  *
  * @note                This is a deprecated endpoint!
+ * @note                The response is a JSON_Object with the place as int under "result"
  * @param callback      Callback when request has finished
  * @param data          Optional data to pass
  * @param id            Id to query
@@ -637,7 +644,7 @@ native bool GlobalAPI_GetRecordsTop(
  * @param topOverallAtLeast Place top overall at least to query
  * @param hasTeleports      Whether to query for hasTeleports or not
  * @param createdSince      Created since date to query
- * @param playerName        Player name to query
+ * @param playerName        Not supported by the API, ignored
  * @param offset            Offset of the dataset to query
  * @param limit             Amount of items returned for the query
  * @return                  Whether request was successfully sent
@@ -753,7 +760,7 @@ native bool GlobalAPI_GetServersByName(OnAPICallFinished callback = INVALID_FUNC
  * @param averageGreaterThan    Average greater than to query
  * @param ratingGreaterThan     Rating greater than to query
  * @param finishesGreaterThan   Finishes greater than to query
- * @param steamId64List         Comma-separated stirng of steamid64s to query
+ * @param steamId64List         Comma-separated string of steamid64s to query
  * @param recordFilterIds       Array of record filter ids to query
  * @param recordFilterIdsLength Length of the record filter ids array
  * @param mapIds                Array of map ids to query
@@ -803,6 +810,7 @@ native bool GlobalAPI_GetPlayerRanks(
  * @param tickRates         Array of tickrates to query
  * @param tickRatesLength   Length of the tickrates array
  * @param hasTeleports      Whether to query for hasTeleports or not
+ * @param isOverall         Not supported by the API, ignored
  * @param offset            Offset of the dataset to query
  * @param limit             Amount of items returned for the query
  * @return                  Whether request was successfully sent
@@ -837,6 +845,7 @@ native bool GlobalAPI_GetRecordFilters(
  * @param tickRates         Array of tickrates to query
  * @param tickRatesLength   Length of the tickrates array
  * @param hasTeleports      Whether to query for hasTeleports or not
+ * @param isOverall         Not supported by the API, ignored
  * @param offset            Offset of the dataset to query
  * @param limit             Amount of items returned for the query
  * @return                  Whether request was successfully sent

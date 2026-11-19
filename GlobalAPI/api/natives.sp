@@ -183,7 +183,7 @@ public int Native_GetAuthStatus(Handle plugin, int numParams)
 /*
     native bool GlobalAPI_GetBans(OnAPICallFinished callback = INVALID_FUNCTION, any data = INVALID_HANDLE, char[] banTypes = DEFAULT_STRING,
                                     char[] banTypesList = DEFAULT_STRING, bool isExpired = DEFAULT_BOOL, char[] ipAddress = DEFAULT_STRING,
-                                    int steamId64 = DEFAULT_INT, char[] steamId = DEFAULT_STRING, char[] notesContain = DEFAULT_STRING,
+                                    char[] steamId64 = DEFAULT_STRING, char[] steamId = DEFAULT_STRING, char[] notesContain = DEFAULT_STRING,
                                     char[] statsContain = DEFAULT_STRING, int serverId = DEFAULT_INT, char[] createdSince = DEFAULT_STRING,
                                     char[] updatedSince = DEFAULT_STRING, int offset = DEFAULT_INT, int limit = DEFAULT_INT)
 */
@@ -304,7 +304,7 @@ public int Native_CreateBan(Handle plugin, int numParams)
 
 /*
     native bool GlobalAPI_GetJumpstats(OnAPICallFinished callback = INVALID_FUNCTION, any data = INVALID_HANDLE, int id = DEFAULT_INT,
-                                        int serverId = DEFAULT_INT, int steamId64 = DEFAULT_INT, char[] steamId = DEFAULT_STRING,
+                                        int serverId = DEFAULT_INT, char[] steamId64 = DEFAULT_STRING, char[] steamId = DEFAULT_STRING,
                                         char[] jumpType = DEFAULT_STRING, char[] steamId64List = DEFAULT_STRING, 
                                         char[] jumpTypeList = DEFAULT_STRING, float greaterThanDistance = DEFAULT_FLOAT,
                                         float lessThanDistance = DEFAULT_FLOAT, bool isMsl = DEFAULT_BOOL,
@@ -446,7 +446,7 @@ public int Native_CreateJumpstat(Handle plugin, int numParams)
 
 /*
     native bool GlobalAPI_GetJumpstatTop(OnAPICallFinished callback = INVALID_FUNCTION, any data = INVALID_HANDLE, char[] jumpType,
-                                            int id = DEFAULT_INT, int serverId = DEFAULT_INT, int steamId64 = DEFAULT_INT,
+                                            int id = DEFAULT_INT, int serverId = DEFAULT_INT, char[] steamId64 = DEFAULT_STRING,
                                             char[] steamId = DEFAULT_STRING, char[] steamId64List = DEFAULT_STRING,
                                             char[] jumpTypeList = DEFAULT_STRING, float greaterThanDistance = DEFAULT_FLOAT,
                                             float lessThanDistance = DEFAULT_FLOAT, bool isMsl = DEFAULT_BOOL,
@@ -569,7 +569,7 @@ public int Native_GetMaps(Handle plugin, int numParams)
     Function callback = GetNativeCell(1);
     any data = GetNativeCell(2);
 
-    char name[GlobalAPI_Max_QueryParam_Length];
+    char name[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(3, name, sizeof(name));
 
     int largerThanFilesize = GetNativeCell(4);
@@ -645,7 +645,7 @@ public int Native_GetMapByName(Handle plugin, int numParams)
     Function callback = GetNativeCell(1);
     any data = GetNativeCell(2);
 
-    char name[GlobalAPI_Max_QueryParam_Length];
+    char name[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(3, name, sizeof(name));
 
     GlobalAPIRequestData hData = CreateRequestData(plugin, callback, data);
@@ -922,7 +922,7 @@ public int Native_GetRecordPlaceById(Handle plugin, int numParams)
 
 /*
     native bool GlobalAPI_GetRecordsTop(OnAPICallFinished callback = INVALID_FUNCTION, any data = INVALID_HANDLE,
-                                            char[] steamId = DEFAULT_STRING, int steamId64 = DEFAULT_INT, int mapId = DEFAULT_INT,
+                                            char[] steamId = DEFAULT_STRING, char[] steamId64 = DEFAULT_STRING, int mapId = DEFAULT_INT,
                                             char[] mapName = DEFAULT_STRING, int tickRate = DEFAULT_INT, int stage = DEFAULT_INT,
                                             char[] modes = DEFAULT_STRING, bool hasTeleports = DEFAULT_BOOL, char[] playerName = DEFAULT_STRING,
                                             int offset = DEFAULT_INT, int limit = DEFAULT_INT)
@@ -941,7 +941,7 @@ public int Native_GetRecordsTop(Handle plugin, int numParams)
 
     int mapId = GetNativeCell(5);
 
-    char mapName[GlobalAPI_Max_QueryParam_Length];
+    char mapName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(6, mapName, sizeof(mapName));
 
     int tickRate = GetNativeCell(7);
@@ -952,7 +952,7 @@ public int Native_GetRecordsTop(Handle plugin, int numParams)
 
     bool hasTeleports = GetNativeCell(10);
 
-    char playerName[GlobalAPI_Max_QueryParam_Length];
+    char playerName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(11, playerName, sizeof(playerName));
 
     int offset = GetNativeCell(12);
@@ -986,7 +986,7 @@ public int Native_GetRecordsTop(Handle plugin, int numParams)
 
 /*
     native bool GlobalAPI_GetRecordsTopRecent(OnAPICallFinished callback = INVALID_FUNCTION, any data = INVALID_HANDLE, char[] steamId = DEFAULT_STRING,
-                                                int steamId64 = DEFAULT_INT, int mapId = DEFAULT_INT, char[] mapName = DEFAULT_STRING,
+                                                char[] steamId64 = DEFAULT_STRING, int mapId = DEFAULT_INT, char[] mapName = DEFAULT_STRING,
                                                 int tickRate = DEFAULT_INT, int stage = DEFAULT_INT, char[] modes = DEFAULT_STRING,
                                                 int placeTopAtLeast = DEFAULT_INT, int placeTopOverallAtLeast = DEFAULT_INT,
                                                 bool hasTeleports = DEFAULT_BOOL, char[] createdSince = DEFAULT_STRING,
@@ -1006,7 +1006,7 @@ public int Native_GetRecordsTopRecent(Handle plugin, int numParams)
 
     int mapId = GetNativeCell(5);
 
-    char mapName[GlobalAPI_Max_QueryParam_Length];
+    char mapName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(6, mapName, sizeof(mapName));
 
     int tickRate = GetNativeCell(7);
@@ -1022,7 +1022,7 @@ public int Native_GetRecordsTopRecent(Handle plugin, int numParams)
     char createdSince[GlobalAPI_Max_QueryParam_Length];
     GetNativeString(13, createdSince, sizeof(createdSince));
 
-    char playerName[GlobalAPI_Max_QueryParam_Length];
+    char playerName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(14, playerName, sizeof(playerName));
 
     int offset = GetNativeCell(15);
@@ -1123,7 +1123,7 @@ public int Native_GetRecordsTopWorldRecords(Handle plugin, int numParams)
 /*
     native bool GlobalAPI_GetServers(OnAPICallFinished callback = INVALID_FUNCTION, any data = INVALID_HANDLE,
                                         int id = DEFAULT_INT, int port = DEFAULT_INT, char[] ip = DEFAULT_STRING,
-                                        char[] name = DEFAULT_STRING, int ownerSteamId64 = DEFAULT_INT,
+                                        char[] name = DEFAULT_STRING, char[] ownerSteamId64 = DEFAULT_STRING,
                                         int approvalStatus = DEFAULT_INT, int offset = DEFAULT_INT, int limit = DEFAULT_INT)
 */
 #define GlobalAPI_GetServers_Endpoint "servers"
@@ -1138,7 +1138,7 @@ public int Native_GetServers(Handle plugin, int numParams)
     char ip[GlobalAPI_Max_QueryParam_Length];
     GetNativeString(5, ip, sizeof(ip));
 
-    char name[GlobalAPI_Max_QueryParam_Length];
+    char name[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(6, name, sizeof(name));
 
     char ownerSteamId64[GlobalAPI_Max_QueryParam_Length];
@@ -1206,7 +1206,7 @@ public int Native_GetServersByName(Handle plugin, int numParams)
     Function callback = GetNativeCell(1);
     any data = GetNativeCell(2);
 
-    char serverName[GlobalAPI_Max_QueryParam_Length];
+    char serverName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(3, serverName, sizeof(serverName));
 
     GlobalAPIRequestData hData = CreateRequestData(plugin, callback, data);
@@ -1229,7 +1229,7 @@ public int Native_GetServersByName(Handle plugin, int numParams)
     native bool GlobalAPI_GetPlayerRanks(OnAPICallFinished callback = INVALID_FUNCTION, any data = DEFAULT_DATA,
                                         int pointsGreaterThan = DEFAULT_INT, float averageGreaterThan = DEFAULT_FLOAT,
                                         float ratingGreaterThan = DEFAULT_FLOAT, int finishesGreaterThan = DEFAULT_INT,
-                                        int[] steamId64s = DEFAULT_INT_ARRAY, int steamId64sLength = DEFAULT_INT, 
+                                        char[] steamId64List = DEFAULT_STRING,
                                         int[] recordFilterIds = DEFAULT_INT_ARRAY, int recordFilterIdsLength = DEFAULT_INT,
                                         int[] mapIds = DEFAULT_INT_ARRAY, int mapIdsLength = DEFAULT_INT,
                                         int[] stages = DEFAULT_INT_ARRAY, int stagesLength = DEFAULT_INT,
@@ -1286,7 +1286,8 @@ public int Native_GetPlayerRanks(Handle plugin, int numParams)
 
     // Add comma-separated steamid64s
     char steamId64s[GlobalAPI_Max_QueryParam_Array_Length][GlobalAPI_Max_QueryParam_Length];
-    int count = ExplodeString(steamId64List, ",", steamId64s, sizeof(steamId64s), sizeof(steamId64s[]));
+    // The API rejects an empty "steamid64s="
+    int count = steamId64List[0] == '\0' ? 0 : ExplodeString(steamId64List, ",", steamId64s, sizeof(steamId64s), sizeof(steamId64s[]));
 
     hData.AddStringArray("steamid64s", steamId64s, count);
 
@@ -1490,7 +1491,7 @@ public int Native_GetReplayByReplayId(Handle plugin, int numParams)
 
 /*
     native bool GlobalAPI_CreateReplayForRecordId(OnAPICallFinished callback = INVALID_FUNCTION, any data = INVALID_HANDLE,
-                                                    int recordId, char[] replayData, int maxlength);
+                                                    int recordId, char[] replayFile);
 */
 #define GlobalAPI_CreateReplayForRecordId_Endpoint "records/{record_id}/replay"
 public int Native_CreateReplayForRecordId(Handle plugin, int numParams)
