@@ -884,6 +884,7 @@ native bool GlobalAPI_GetReplayList(
 /**
  * Starts a GET HTTP Request to /api/{version}/records/{recordId}/replay
  *
+ * @note                The replay is saved to a file, see GlobalAPIRequestData.GetDataPath
  * @param callback      Callback when request has finished
  * @param data          Optional data to pass
  * @param recordId      Record id to query
@@ -894,6 +895,7 @@ native bool GlobalAPI_GetReplayByRecordId(OnAPICallFinished callback = INVALID_F
 /**
  * Starts a GET HTTP Request to /api/{version}/records/replay/{replayId}
  *
+ * @note                The replay is saved to a file, see GlobalAPIRequestData.GetDataPath
  * @param callback      Callback when request has finished
  * @param data          Optional data to pass
  * @param replayId      Replay id to query
