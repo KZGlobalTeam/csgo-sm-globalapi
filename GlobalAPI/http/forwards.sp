@@ -53,10 +53,21 @@ public void Global_HTTP_Data(const char[] response, GlobalAPIRequestData hData)
     if (hData.AcceptType == GlobalAPIRequestContentType_OctetStream)
     {
         char path[PLATFORM_MAX_PATH];
-        BuildPath(Path_SM, path, sizeof(path), "data/GlobalAPI/%d_%f.%s",
-                                                GetTime(),
-                                                GetEngineTime(),
-                                                GlobalAPI_Data_File_Extension);
+
+        // Downloads finishing in the same frame get the same time
+        for (int i = 0; ; i++)
+        {
+            BuildPath(Path_SM, path, sizeof(path), "data/GlobalAPI/%d_%f_%d.%s",
+                                                    GetTime(),
+                                                    GetEngineTime(),
+                                                    i,
+                                                    GlobalAPI_Data_File_Extension);
+
+            if (!FileExists(path))
+            {
+                break;
+            }
+        }
 
         hData.AddDataPath(path);
 
