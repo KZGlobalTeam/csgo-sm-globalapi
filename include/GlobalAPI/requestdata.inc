@@ -315,6 +315,22 @@ methodmap GlobalAPIRequestData < JSON_Object
         this.GetString("bodyFile", buffer, maxlength);
     }
 
+    /**
+     * Gets the path of the downloaded file from the request data
+     *
+     * @note                Empty when nothing was saved, the caller deletes the file
+     * @param buffer        Buffer to store the result in
+     * @param maxlength     Maxlength of the buffer
+     * @noreturn
+     */
+    public void GetDataPath(char[] buffer, int maxlength)
+    {
+        if (!this.GetString("dataFilePath", buffer, maxlength))
+        {
+            buffer[0] = '\0';
+        }
+    }
+
    /**
      * Adds a number to the request data
      *
