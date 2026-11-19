@@ -95,8 +95,7 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
     char path[PLATFORM_MAX_PATH];
     char bodyFilePath[PLATFORM_MAX_PATH];
 
-    // Requests failing in the same frame get the same time,
-    // and a body copy can outlive its data file
+    // Same-frame failures get the same time, and body copies can outlive data files
     for (int i = 0; ; i++)
     {
         FormatEx(dataFile, sizeof(dataFile), DATA_FILE, szTimestamp, szGameTime, i);
@@ -261,7 +260,7 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
 {
     isCorrupt = false;
 
-    // Binary mode, in text mode Windows ends the read at a 0x1A byte
+    // In text mode Windows stops reading at a 0x1A byte
     File file = OpenFile(filePath, "rb");
     if (file == null)
     {

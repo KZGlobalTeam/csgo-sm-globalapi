@@ -277,7 +277,7 @@ methodmap GlobalAPIRequestData < JSON_Object
     {
         public get()
         {
-            // Requests built without CreateRequestData may have none
+            // Requests built by other plugins may not set one
             return view_as<Handle>(this.GetInt("callback", 0));
         }
         public set(Handle hFwd)
