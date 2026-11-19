@@ -569,7 +569,7 @@ public int Native_GetMaps(Handle plugin, int numParams)
     Function callback = GetNativeCell(1);
     any data = GetNativeCell(2);
 
-    char name[GlobalAPI_Max_QueryParam_Length];
+    char name[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(3, name, sizeof(name));
 
     int largerThanFilesize = GetNativeCell(4);
@@ -645,7 +645,7 @@ public int Native_GetMapByName(Handle plugin, int numParams)
     Function callback = GetNativeCell(1);
     any data = GetNativeCell(2);
 
-    char name[GlobalAPI_Max_QueryParam_Length];
+    char name[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(3, name, sizeof(name));
 
     GlobalAPIRequestData hData = CreateRequestData(plugin, callback, data);
@@ -941,7 +941,7 @@ public int Native_GetRecordsTop(Handle plugin, int numParams)
 
     int mapId = GetNativeCell(5);
 
-    char mapName[GlobalAPI_Max_QueryParam_Length];
+    char mapName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(6, mapName, sizeof(mapName));
 
     int tickRate = GetNativeCell(7);
@@ -952,7 +952,7 @@ public int Native_GetRecordsTop(Handle plugin, int numParams)
 
     bool hasTeleports = GetNativeCell(10);
 
-    char playerName[GlobalAPI_Max_QueryParam_Length];
+    char playerName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(11, playerName, sizeof(playerName));
 
     int offset = GetNativeCell(12);
@@ -1006,7 +1006,7 @@ public int Native_GetRecordsTopRecent(Handle plugin, int numParams)
 
     int mapId = GetNativeCell(5);
 
-    char mapName[GlobalAPI_Max_QueryParam_Length];
+    char mapName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(6, mapName, sizeof(mapName));
 
     int tickRate = GetNativeCell(7);
@@ -1022,7 +1022,7 @@ public int Native_GetRecordsTopRecent(Handle plugin, int numParams)
     char createdSince[GlobalAPI_Max_QueryParam_Length];
     GetNativeString(13, createdSince, sizeof(createdSince));
 
-    char playerName[GlobalAPI_Max_QueryParam_Length];
+    char playerName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(14, playerName, sizeof(playerName));
 
     int offset = GetNativeCell(15);
@@ -1138,7 +1138,7 @@ public int Native_GetServers(Handle plugin, int numParams)
     char ip[GlobalAPI_Max_QueryParam_Length];
     GetNativeString(5, ip, sizeof(ip));
 
-    char name[GlobalAPI_Max_QueryParam_Length];
+    char name[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(6, name, sizeof(name));
 
     char ownerSteamId64[GlobalAPI_Max_QueryParam_Length];
@@ -1206,7 +1206,7 @@ public int Native_GetServersByName(Handle plugin, int numParams)
     Function callback = GetNativeCell(1);
     any data = GetNativeCell(2);
 
-    char serverName[GlobalAPI_Max_QueryParam_Length];
+    char serverName[GlobalAPI_Max_QueryParam_Length * 4];
     GetNativeString(3, serverName, sizeof(serverName));
 
     GlobalAPIRequestData hData = CreateRequestData(plugin, callback, data);
