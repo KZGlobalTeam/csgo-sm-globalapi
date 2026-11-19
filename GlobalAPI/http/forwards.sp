@@ -88,13 +88,19 @@ static void SaveResponseBody(Handle request, GlobalAPIRequestData hData)
         }
     }
 
-    if (SteamWorks_WriteHTTPResponseBodyToFile(request, path))
+    // SteamWorks throws instead of returning false when it cannot create the file
+    File file = OpenFile(path, "wb");
+    bool created = file != null;
+    delete file;
+
+    if (created && SteamWorks_WriteHTTPResponseBodyToFile(request, path))
     {
         hData.AddDataPath(path);
     }
     else
     {
         LogError("[GlobalAPI] Could not write response body to %s", path);
+        DeleteFile(path);
     }
 }
 
