@@ -51,7 +51,13 @@ methodmap APIBan < JSON_Object
 
     property int UpdatedById
     {
-        public get() { return this.GetInt("updated_by_id"); }
+        public get()
+        {
+            // The API sends it as a string
+            char id[32];
+            this.GetString("updated_by_id", id, sizeof(id));
+            return StringToInt(id);
+        }
     }
 
     public void GetStats(char[] buffer, int maxlength)
