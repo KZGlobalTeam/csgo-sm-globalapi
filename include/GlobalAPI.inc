@@ -582,6 +582,7 @@ native bool GlobalAPI_CreateRecord(
  * Starts a GET HTTP Request to /api/{version}/records/place/{id}
  *
  * @note                This is a deprecated endpoint!
+ * @note                The response is a JSON_Object with the place as int under "result"
  * @param callback      Callback when request has finished
  * @param data          Optional data to pass
  * @param id            Id to query
