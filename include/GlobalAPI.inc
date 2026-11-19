@@ -645,7 +645,7 @@ native bool GlobalAPI_GetRecordsTop(
  * @param topOverallAtLeast Place top overall at least to query
  * @param hasTeleports      Whether to query for hasTeleports or not
  * @param createdSince      Created since date to query
- * @param playerName        Player name to query
+ * @param playerName        Not supported by the API, ignored
  * @param offset            Offset of the dataset to query
  * @param limit             Amount of items returned for the query
  * @return                  Whether request was successfully sent
@@ -811,6 +811,7 @@ native bool GlobalAPI_GetPlayerRanks(
  * @param tickRates         Array of tickrates to query
  * @param tickRatesLength   Length of the tickrates array
  * @param hasTeleports      Whether to query for hasTeleports or not
+ * @param isOverall         Not supported by the API, ignored
  * @param offset            Offset of the dataset to query
  * @param limit             Amount of items returned for the query
  * @return                  Whether request was successfully sent
@@ -845,6 +846,7 @@ native bool GlobalAPI_GetRecordFilters(
  * @param tickRates         Array of tickrates to query
  * @param tickRatesLength   Length of the tickrates array
  * @param hasTeleports      Whether to query for hasTeleports or not
+ * @param isOverall         Not supported by the API, ignored
  * @param offset            Offset of the dataset to query
  * @param limit             Amount of items returned for the query
  * @return                  Whether request was successfully sent
