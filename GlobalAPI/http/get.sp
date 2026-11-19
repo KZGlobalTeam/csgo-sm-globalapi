@@ -14,7 +14,7 @@ bool HTTPGet(GlobalAPIRequestData hData)
     hData.GetString("url", requestUrl, sizeof(requestUrl));
     StrCat(requestUrl, sizeof(requestUrl), requestParams);
 
-    // A full buffer means the query was cut, which would change what it asks for
+    // A full buffer means the query was cut
     if (strlen(requestParams) >= sizeof(requestParams) - 1 || strlen(requestUrl) >= sizeof(requestUrl) - 1)
     {
         char endpoint[GlobalAPI_Max_BaseUrl_Length];

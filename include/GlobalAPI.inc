@@ -206,8 +206,7 @@ native bool GlobalAPI_IsDebugging();
 /**
  * Sends a request in GlobalAPI plugin format
  *
- * @note                GlobalAPI owns hData after this call, even when it returns false,
- *                      so do not use or delete it afterwards
+ * @note                GlobalAPI owns hData after this call, even when it returns false
  * @param hData         Handle to GlobalAPIRequestData
  * @return              Whether the request was sent successfully
  */

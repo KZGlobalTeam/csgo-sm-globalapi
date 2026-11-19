@@ -29,9 +29,9 @@ public void Global_HTTP_Completed(Handle request, bool failure, bool requestSucc
         {
             CallForward_NoResponse(hData);
         }
-        // Replays are larger than the plugin heap, so they never pass through a string
         else if (hData.AcceptType == GlobalAPIRequestAcceptType_OctetStream)
         {
+            // Replays can be larger than the plugin heap
             SaveResponseBody(request, hData);
             CallForward_NoResponse(hData);
         }
@@ -98,8 +98,7 @@ static void SaveResponseBody(Handle request, GlobalAPIRequestData hData)
     }
 }
 
-// records/place returns a bare number, which json_decode does not accept,
-// so it is passed on as {"result": value}
+// records/place returns a bare number, json_decode only takes objects and arrays
 static JSON_Object DecodeBareValue(const char[] response)
 {
     int length = strlen(response) + 12;
@@ -108,7 +107,7 @@ static JSON_Object DecodeBareValue(const char[] response)
 
     JSON_Object hJson = json_decode(wrapped);
 
-    // A "null" response stays null, callers check for that
+    // A "null" response stays null
     if (hJson != null && hJson.GetType("result") == JSON_Type_Object)
     {
         json_cleanup_and_delete(hJson);
