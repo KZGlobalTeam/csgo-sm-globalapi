@@ -699,7 +699,7 @@ native bool GlobalAPI_GetRecordsTopWorldRecords(
     int[] modeIds = DEFAULT_INT_ARRAY, int modeIdsLength = DEFAULT_INT,
     int[] tickRates = DEFAULT_INT_ARRAY, int tickRatesLength = DEFAULT_INT,
     bool hasTeleports = DEFAULT_BOOL,
-    char[] mapTag = DEFAULT_STRING,
+    const char[] mapTag = DEFAULT_STRING,
     int offset = DEFAULT_INT,
     int limit = DEFAULT_INT
 );
@@ -916,7 +916,7 @@ native bool GlobalAPI_CreateReplayForRecordId(
     OnAPICallFinished callback = INVALID_FUNCTION,
     any data = DEFAULT_DATA,
     int recordId,
-    char[] replayFile
+    const char[] replayFile
 );
 
 // ======================= PLUGIN INFO ======================= //

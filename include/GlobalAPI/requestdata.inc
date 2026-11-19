@@ -27,7 +27,7 @@ methodmap GlobalAPIRequestData < JSON_Object
     * @param pluginVersion  Version of the calling plugin
     * @return               A new GlobalAPIRequestData handle
     */
-    public GlobalAPIRequestData(Handle plugin = null, char[] pluginName = "Unknown", char[] pluginVersion = "Unknown")
+    public GlobalAPIRequestData(Handle plugin = null, const char[] pluginName = "Unknown", const char[] pluginVersion = "Unknown")
     {
         JSON_Object requestData = new JSON_Object();
 
@@ -72,7 +72,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param key           Key to set as default
      * @noreturn
      */
-    public void SetDefault(char[] key)
+    public void SetDefault(const char[] key)
     {
         this.SetInt(key, 0);
         this.SetHidden(key, true);
@@ -84,7 +84,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param url           Url to set
      * @noreturn
      */
-    public void AddUrl(char[] url)
+    public void AddUrl(const char[] url)
     {
         this.SetString("url", url);
         this.SetHidden("url", true);
@@ -96,7 +96,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param endpoint      Endpoint to set
      * @noreturn
      */
-    public void AddEndpoint(char[] endpoint)
+    public void AddEndpoint(const char[] endpoint)
     {
         this.SetString("endpoint", endpoint);
         this.SetHidden("endpoint", true);
@@ -109,7 +109,7 @@ methodmap GlobalAPIRequestData < JSON_Object
     * @param path           Body file (path) to set
     * @noreturn
     */
-    public void AddBodyFile(char[] path)
+    public void AddBodyFile(const char[] path)
     {
         this.SetString("bodyFile", path);
         this.SetHidden("bodyFile", true);
@@ -122,7 +122,7 @@ methodmap GlobalAPIRequestData < JSON_Object
     * @param path           Data path to set
     * @noreturn
     */
-    public void AddDataPath(char[] path)
+    public void AddDataPath(const char[] path)
     {
         this.SetString("dataFilePath", path);
         this.SetHidden("dataFilePath", true);
@@ -340,7 +340,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param value         Value of the key
      * @noreturn
      */
-    public void AddNum(char[] key, int value)
+    public void AddNum(const char[] key, int value)
     {
         if (value == -1)
         {
@@ -361,7 +361,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param value         Value of the key
      * @noreturn
      */
-    public void AddFloat(char[] key, float value)
+    public void AddFloat(const char[] key, float value)
     {
         if (value == -1.000000)
         {
@@ -382,7 +382,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param value         Value of the key
      * @noreturn
      */
-    public void AddString(char[] key, char[] value)
+    public void AddString(const char[] key, const char[] value)
     {
         if (StrEqual(value, ""))
         {
@@ -403,7 +403,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param value         Value of the key
      * @noreturn
      */
-    public void AddBool(char[] key, bool value)
+    public void AddBool(const char[] key, bool value)
     {
         if (value != true && value != false)
         {
@@ -424,7 +424,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param maxlength     Max length of the values array
      * @noreturn
      */
-    public void AddIntArray(char[] key, int[] value, int maxlength)
+    public void AddIntArray(const char[] key, const int[] value, int maxlength)
     {
         if (maxlength <= 0)
         {
@@ -451,7 +451,7 @@ methodmap GlobalAPIRequestData < JSON_Object
      * @param itemCount     Amount of strings in the array
      * @noreturn
      */
-    public void AddStringArray(char[] key, char[][] value, int itemCount)
+    public void AddStringArray(const char[] key, const char[][] value, int itemCount)
     {
         if (itemCount <= 0)
         {
