@@ -274,7 +274,14 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
 
     if (legacy)
     {
-        file.Seek(0, SEEK_SET);
+        // 2.0.6 wrote these in text mode, which Windows only reads back in text mode
+        delete file;
+        file = OpenFile(filePath, "r");
+        if (file == null)
+        {
+            LogError("Could not open binary file %s", filePath);
+            return null;
+        }
     }
     else
     {
