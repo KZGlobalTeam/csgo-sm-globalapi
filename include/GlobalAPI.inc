@@ -207,7 +207,7 @@ native bool GlobalAPI_IsDebugging();
 /**
  * Sends a request in GlobalAPI plugin format
  *
- * @note                GlobalAPI sends a copy, the caller still frees hData
+ * @note                GlobalAPI sends a copy, which callbacks and forwards get, the caller still frees hData
  * @param hData         Handle to GlobalAPIRequestData
  * @return              Whether the request was sent successfully
  */
