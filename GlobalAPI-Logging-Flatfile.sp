@@ -145,21 +145,33 @@ void DoLog(LogType type, GlobalAPIRequestData hData)
 
         if (strlen(params) > 0)
         {
-            file.WriteLine("%s  - Query params: %s", logPrefix, params);
+            WriteLongLine(file, logPrefix, "Query params", params);
         }
     }
     else if (hData.RequestType == GlobalAPIRequestType_POST)
     {
-        char body[8192];
-        hData.Encode(body, sizeof(body));
+        int bodySize = json_encode_size(hData);
+        char[] body = new char[bodySize];
+        hData.Encode(body, bodySize);
 
         if (strlen(body) > 0)
         {
-            file.WriteLine("%s  - Request body: %s", logPrefix, body);
+            WriteLongLine(file, logPrefix, "Request body", body);
         }
     }
 
     delete file;
+}
+
+// WriteLine formats into a 2048 byte buffer, which would cut long values
+void WriteLongLine(File file, const char[] logPrefix, const char[] label, const char[] value)
+{
+    char start[128];
+    FormatEx(start, sizeof(start), "%s  - %s: ", logPrefix, label);
+
+    file.WriteString(start, false);
+    file.WriteString(value, false);
+    file.WriteString("\n", false);
 }
 
 bool IsLevelEnabled(LogLevel level)
