@@ -85,28 +85,9 @@ bool IsRetryableRequest(GlobalAPIRequestData hData)
 
 public void SaveRequestAsBinary(GlobalAPIRequestData hData)
 {
-    char szTimestamp[32];
-    IntToString(GetTime(), szTimestamp, sizeof(szTimestamp));
-
-    char szGameTime[32];
-    FloatToString(GetEngineTime(), szGameTime, sizeof(szGameTime));
-
-    char dataFile[PLATFORM_MAX_PATH];
     char path[PLATFORM_MAX_PATH];
     char bodyFilePath[PLATFORM_MAX_PATH];
-
-    // Same-frame failures get the same time, and body copies can outlive data files
-    for (int i = 0; ; i++)
-    {
-        FormatEx(dataFile, sizeof(dataFile), DATA_FILE, szTimestamp, szGameTime, i);
-        BuildPath(Path_SM, path, sizeof(path), "%s/%s", DATA_PATH, dataFile);
-        BuildPath(Path_SM, bodyFilePath, sizeof(bodyFilePath), "%s/files/%s", DATA_PATH, dataFile);
-
-        if (!FileExists(path) && !FileExists(bodyFilePath))
-        {
-            break;
-        }
-    }
+    GetNewFilePaths(path, bodyFilePath);
 
     File binaryFile = OpenFile(path, "wb");
     if (binaryFile == null)
@@ -176,7 +157,7 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
     binaryFile.WriteInt8(hData.KeyRequired);
     binaryFile.WriteInt8(hData.RequestType);
     binaryFile.WriteInt32(hData.BodyLength);
-    binaryFile.WriteInt32(StringToInt(szTimestamp));
+    binaryFile.WriteInt32(GetTime());
     binaryFile.WriteInt16(strlen(bodyFilePath));
     binaryFile.WriteString(bodyFilePath, false);
 
@@ -185,6 +166,12 @@ public void SaveRequestAsBinary(GlobalAPIRequestData hData)
 
 public Action CheckForRequests(Handle timer)
 {
+    // Requests need a key, without one they would only be dropped
+    if (!GlobalAPI_HasAPIKey() && !GlobalAPI_IsDebugging())
+    {
+        return Plugin_Continue;
+    }
+
     char path[PLATFORM_MAX_PATH];
     BuildPath(Path_SM, path, sizeof(path), DATA_PATH);
 
@@ -244,18 +231,35 @@ public Action CheckForRequests(Handle timer)
         return Plugin_Continue;
     }
 
-    DeleteFile(dataFile);
-
     char bodyFilePath[PLATFORM_MAX_PATH];
     requestData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
+
+    if (bodyFilePath[0] != '\0' && !FileExists(bodyFilePath))
+    {
+        LogError("Dropping retrying file %s, its body file %s is missing", dataFile, bodyFilePath);
+
+        json_cleanup_and_delete(requestData);
+        DeleteFile(dataFile);
+        return Plugin_Continue;
+    }
 
     // GlobalAPI sends a copy
     bool sent = GlobalAPI_SendRequest(requestData);
     json_cleanup_and_delete(requestData);
 
-    if (!sent && bodyFilePath[0] != '\0')
+    if (sent)
     {
-        DeleteFile(bodyFilePath);
+        DeleteFile(dataFile);
+    }
+    else
+    {
+        // A new name puts it behind the other queued requests
+        char newPath[PLATFORM_MAX_PATH];
+        char newBodyFilePath[PLATFORM_MAX_PATH];
+        GetNewFilePaths(newPath, newBodyFilePath);
+        RenameFile(newPath, dataFile);
+
+        LogError("Could not resend %s, queued again as %s", dataFile, newPath);
     }
 
     return Plugin_Continue;
@@ -372,6 +376,30 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
 }
 
 // =====[ PRIVATE ]=====
+
+// Same-frame failures get the same time, and body copies can outlive data files
+static void GetNewFilePaths(char path[PLATFORM_MAX_PATH], char bodyFilePath[PLATFORM_MAX_PATH])
+{
+    char szTimestamp[32];
+    IntToString(GetTime(), szTimestamp, sizeof(szTimestamp));
+
+    char szGameTime[32];
+    FloatToString(GetEngineTime(), szGameTime, sizeof(szGameTime));
+
+    char dataFile[PLATFORM_MAX_PATH];
+
+    for (int i = 0; ; i++)
+    {
+        FormatEx(dataFile, sizeof(dataFile), DATA_FILE, szTimestamp, szGameTime, i);
+        BuildPath(Path_SM, path, sizeof(path), "%s/%s", DATA_PATH, dataFile);
+        BuildPath(Path_SM, bodyFilePath, sizeof(bodyFilePath), "%s/files/%s", DATA_PATH, dataFile);
+
+        if (!FileExists(path) && !FileExists(bodyFilePath))
+        {
+            break;
+        }
+    }
+}
 
 // Corrupt lengths must not reach new char[],
 // a runtime error there would skip deleting the file
