@@ -211,6 +211,9 @@ public Action CheckForRequests(Handle timer)
 
     delete dataFiles;
 
+    // File names start with the time they were saved
+    SortADTArray(foundFiles, Sort_Ascending, Sort_String);
+
     GlobalAPIRequestData requestData = null;
 
     // Files we cannot deserialize are skipped,
