@@ -53,11 +53,16 @@ methodmap APIBan < JSON_Object
     {
         public get()
         {
-            // The API sends it as a string
+            // The API sends a string, -1 when it holds a SteamID64 (see GetUpdatedById)
             char id[32];
             this.GetString("updated_by_id", id, sizeof(id));
             return StringToInt(id);
         }
+    }
+
+    public void GetUpdatedById(char[] buffer, int maxlength)
+    {
+        this.GetString("updated_by_id", buffer, maxlength);
     }
 
     public void GetStats(char[] buffer, int maxlength)
