@@ -47,6 +47,8 @@ public void OnPluginStart()
         SetFailState("Failed to create directory %s", filesDirPath);
     }
 
+    DeleteOrphanedBodyFiles(rootDirPath, filesDirPath);
+
     CreateTimer(30.0, CheckForRequests, _, TIMER_REPEAT);
 }
 
@@ -376,6 +378,58 @@ public GlobalAPIRequestData Deserialize(char filePath[PLATFORM_MAX_PATH], bool &
 }
 
 // =====[ PRIVATE ]=====
+
+// Copies are left behind when their data file was corrupt or the server stopped mid retry
+static void DeleteOrphanedBodyFiles(const char[] rootDirPath, const char[] filesDirPath)
+{
+    StringMap usedFiles = new StringMap();
+
+    char path[PLATFORM_MAX_PATH];
+    char bodyFilePath[PLATFORM_MAX_PATH];
+    FileType fileType = FileType_Unknown;
+    bool allRead = true;
+
+    DirectoryListing dataFiles = OpenDirectory(rootDirPath);
+    while (dataFiles != null && dataFiles.GetNext(path, sizeof(path), fileType))
+    {
+        if (fileType != FileType_File)
+        {
+            continue;
+        }
+
+        Format(path, sizeof(path), "%s/%s", rootDirPath, path);
+
+        bool isCorrupt = false;
+        GlobalAPIRequestData hData = Deserialize(path, isCorrupt);
+
+        // A file of another format version may still need its copy
+        if (hData == null)
+        {
+            allRead = allRead && isCorrupt;
+            continue;
+        }
+
+        hData.GetBodyFile(bodyFilePath, sizeof(bodyFilePath));
+        usedFiles.SetValue(bodyFilePath, true);
+        json_cleanup_and_delete(hData);
+    }
+    delete dataFiles;
+
+    DirectoryListing bodyFiles = allRead ? OpenDirectory(filesDirPath) : null;
+    while (bodyFiles != null && bodyFiles.GetNext(path, sizeof(path), fileType))
+    {
+        Format(path, sizeof(path), "%s/%s", filesDirPath, path);
+
+        if (fileType == FileType_File && !usedFiles.ContainsKey(path))
+        {
+            LogMessage("Deleting orphaned retrying body file %s", path);
+            DeleteFile(path);
+        }
+    }
+    delete bodyFiles;
+
+    delete usedFiles;
+}
 
 // Same-frame failures get the same time, and body copies can outlive data files
 static void GetNewFilePaths(char path[PLATFORM_MAX_PATH], char bodyFilePath[PLATFORM_MAX_PATH])
