@@ -467,7 +467,7 @@ methodmap GlobalAPIRequestData < JSON_Object
         int jsonSize = this.Length;
 
         char key[64];
-        char value[1024];
+        char value[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
 
         int paramCount = 0;
 

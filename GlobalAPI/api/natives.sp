@@ -202,7 +202,7 @@ public int Native_GetBans(Handle plugin, int numParams)
     char banTypes[GlobalAPI_Max_QueryParam_Length];
     GetNativeString(3, banTypes, sizeof(banTypes));
 
-    char banTypesList[GlobalAPI_Max_QueryParam_Length];
+    char banTypesList[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
     GetNativeString(4, banTypesList, sizeof(banTypesList));
 
     bool isExpired = GetNativeCell(5);
@@ -337,11 +337,10 @@ public int Native_GetJumpstats(Handle plugin, int numParams)
     char jumpType[GlobalAPI_Max_QueryParam_Length];
     GetNativeString(7, jumpType, sizeof(jumpType));
 
-    // TODO FIXME: 64 is certainly not enough
-    char steamId64List[GlobalAPI_Max_QueryParam_Length];
+    char steamId64List[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
     GetNativeString(8, steamId64List, sizeof(steamId64List));
 
-    char jumpTypeList[GlobalAPI_Max_QueryParam_Length];
+    char jumpTypeList[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
     GetNativeString(9, jumpTypeList, sizeof(jumpTypeList));
 
     float greaterThanDistance = GetNativeCell(10);
@@ -479,10 +478,10 @@ public int Native_GetJumpstatTop(Handle plugin, int numParams)
     char steamId[GlobalAPI_Max_QueryParam_Length];
     GetNativeString(7, steamId, sizeof(steamId));
 
-    char steamId64List[GlobalAPI_Max_QueryParam_Length];
+    char steamId64List[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
     GetNativeString(8, steamId64List, sizeof(steamId64List));
 
-    char jumpTypeList[GlobalAPI_Max_QueryParam_Length];
+    char jumpTypeList[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
     GetNativeString(9, jumpTypeList, sizeof(jumpTypeList));
 
     float greaterThanDistance = GetNativeCell(10);
@@ -768,8 +767,7 @@ public int Native_GetPlayers(Handle plugin, int numParams)
     char ip[GlobalAPI_Max_QueryParam_Length];
     GetNativeString(6, ip, sizeof(ip));
 
-    // TODO FIXME: 64 is certainly not enough
-    char steamId64List[GlobalAPI_Max_QueryParam_Length];
+    char steamId64List[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
     GetNativeString(7, steamId64List, sizeof(steamId64List));
 
     GlobalAPIRequestData hData = CreateRequestData(plugin, callback, data);
@@ -953,7 +951,7 @@ public int Native_GetRecordsTop(Handle plugin, int numParams)
     int tickRate = GetNativeCell(7);
     int stage = GetNativeCell(8);
 
-    char modes[GlobalAPI_Max_QueryParam_Length];
+    char modes[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
     GetNativeString(9, modes, sizeof(modes));
 
     bool hasTeleports = GetNativeCell(10);
@@ -1018,7 +1016,7 @@ public int Native_GetRecordsTopRecent(Handle plugin, int numParams)
     int tickRate = GetNativeCell(7);
     int stage = GetNativeCell(8);
 
-    char modes[GlobalAPI_Max_QueryParam_Length];
+    char modes[GlobalAPI_Max_QueryParam_Length * GlobalAPI_Max_QueryParam_Array_Length];
     GetNativeString(9, modes, sizeof(modes));
 
     int placeTopAtLeast = GetNativeCell(10);
